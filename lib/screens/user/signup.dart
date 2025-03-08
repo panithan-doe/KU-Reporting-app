@@ -328,6 +328,28 @@ class _SignUpPageState extends State<SignUpPage> {
               ),
             ),
           ),
+          Padding(
+            padding: EdgeInsets.all(14),
+            child: SizedBox(
+              height: 132,
+              width: double.infinity,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  IconButton(
+                    onPressed: () {
+                      Navigator.pushReplacementNamed(
+                        context,
+                        '/sign-in'
+                      );
+                    }, 
+                    icon: Icon(Icons.arrow_back, color: Colors.white, size: 28,)
+                  ),
+                ],
+              ),
+            ),
+          )
+
         ],
       ),
     );
