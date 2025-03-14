@@ -1,6 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide OAuthProvider;
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:ku_report_app/bottom_nav.dart';
 import 'package:ku_report_app/theme/color.dart';
 
 class SignInPage extends StatefulWidget {
@@ -29,15 +31,40 @@ class _SignInPageState extends State<SignInPage> {
 
     try {
       // Use Firebase Auth directly
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
+      UserCredential userCred = await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text,
       );
 
-      if (mounted) {
-        Navigator.pushReplacementNamed(context, '/home');
+      final uid = userCred.user!.uid;
+      final userDoc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+
+      if (!userDoc.exists) {
+        // In case there's no doc or something's wrong
+        setState(() {
+          _errorMessage = 'User record does not exist.';
+        });
+        return;
       }
+
+      final userData = userDoc.data()!;
+      final role = userData['role'] as String? ?? 'User';
+
+    if (mounted) {
+      // Pass the role to your next screen or store in a global place
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => BottomNavBar(
+            role: role,
+          ),
+        ),
+      );
+    }
+
+
     } on FirebaseAuthException catch (e) {
+      print('Firebase error code: ${e.code}'); // Debug print
       setState(() {
         _errorMessage = _getFirebaseErrorMessage(e.code);
       });
@@ -103,69 +130,6 @@ class _SignInPageState extends State<SignInPage> {
     }
   }
 
-  // Create a new account
-  // Future<void> _createAccount() async {
-  //   if (!_formKey.currentState!.validate()) return;
-
-  //   setState(() {
-  //     _isLoading = true;
-  //     _errorMessage = null;
-  //   });
-
-  //   try {
-  //     await FirebaseAuth.instance.createUserWithEmailAndPassword(
-  //       email: _emailController.text.trim(),
-  //       password: _passwordController.text,
-  //     );
-
-  //     if (mounted) {
-  //       Navigator.pushReplacementNamed(context, '/home');
-  //     }
-  //   } on FirebaseAuthException catch (e) {
-  //     setState(() {
-  //       _errorMessage = _getFirebaseErrorMessage(e.code);
-  //     });
-  //   } catch (e) {
-  //     setState(() {
-  //       _errorMessage = 'An unexpected error occurred';
-  //     });
-  //   } finally {
-  //     if (mounted) {
-  //       setState(() {
-  //         _isLoading = false;
-  //       });
-  //     }
-  //   }
-  // }
-
-  // Handle forgot password
-  // Future<void> _handleForgotPassword() async {
-  //   if (_emailController.text.isEmpty) {
-  //     setState(() {
-  //       _errorMessage = 'Please enter your email address';
-  //     });
-  //     return;
-  //   }
-
-  //   try {
-  //     await FirebaseAuth.instance.sendPasswordResetEmail(
-  //       email: _emailController.text.trim(),
-  //     );
-
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       SnackBar(
-  //         content: Text(
-  //           'Password reset email sent to ${_emailController.text}',
-  //         ),
-  //         backgroundColor: Colors.green,
-  //       ),
-  //     );
-  //   } on FirebaseAuthException catch (e) {
-  //     setState(() {
-  //       _errorMessage = _getFirebaseErrorMessage(e.code);
-  //     });
-  //   }
-  // }
 
   // Get user-friendly error messages
   String _getFirebaseErrorMessage(String code) {
@@ -184,6 +148,8 @@ class _SignInPageState extends State<SignInPage> {
         return 'The password is too weak.';
       case 'operation-not-allowed':
         return 'Email/password accounts are not enabled.';
+      case 'invalid-credential':
+        return 'This email is not registered. Please try another account or sign up';
       default:
         return 'An error occurred. Please try again.';
     }

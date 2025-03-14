@@ -7,7 +7,12 @@ import 'package:ku_report_app/screens/user/profile.dart';
 import 'package:ku_report_app/theme/color.dart';
 
 class BottomNavBar extends StatefulWidget {
-  const BottomNavBar({super.key});
+  final String role;
+
+  const BottomNavBar({
+    super.key,
+    required this.role,
+  });
 
   @override
   State<BottomNavBar> createState() => _BottomNavBarState();
@@ -16,7 +21,7 @@ class BottomNavBar extends StatefulWidget {
 class _BottomNavBarState extends State<BottomNavBar> {
   int _currentIndex = 0;
 
-  final List<Widget> _pages = const [
+  final List<Widget> userPages = const [
     HomeScreen(),
     AllReportsScreen(),
     ReportFormScreen(),
@@ -24,7 +29,19 @@ class _BottomNavBarState extends State<BottomNavBar> {
     ProfileScreen(),
   ];
 
-  Widget get currentPage => _pages[_currentIndex];
+  final List<Widget> adminPages = const [
+    HomeScreen(),
+    AllReportsScreen(),
+    ReportFormScreen(),
+    DashboardScreen(),
+    ProfileScreen(),
+    // Additional pages for Admin
+    // ManageUserScreen(),
+    // or something else
+  ];
+
+  // Widget get currentPage => _pages[_currentIndex];
+
 
   Widget _buildNavItem({
     required IconData icon,
@@ -59,10 +76,35 @@ class _BottomNavBarState extends State<BottomNavBar> {
 
   @override
   Widget build(BuildContext context) {
+    final role = widget.role;
+
+    bool isAdmin = role == 'Admin';
+    bool isTechnician = role == 'Technician';
+    bool isUser = role == 'User';
+
     return Scaffold(
-      body: currentPage,
+      body: IndexedStack(
+        index: _currentIndex,
+        children: isAdmin ? [
+          HomeScreen(),
+          AllReportsScreen(),
+          ReportFormScreen(),     // the middle
+          DashboardScreen(),
+          ProfileScreen(),
+        ] : [
+          HomeScreen(),
+          AllReportsScreen(),
+          // The third item is only for normal user & admin 
+          // but not for technician => so we can conditionally 
+          // add an "empty" placeholder if it's technician.
+          if (!isTechnician) ReportFormScreen() else Container(),
+          DashboardScreen(),
+          ProfileScreen(),
+        ],
+
+      ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: SizedBox(
+      floatingActionButton: isTechnician ? null : SizedBox(
         width: 72,
         height: 72,
 
@@ -77,7 +119,14 @@ class _BottomNavBarState extends State<BottomNavBar> {
           child: const Icon(Icons.add, color: Colors.white, size: 28),
         ),
       ),
-      bottomNavigationBar: BottomAppBar(
+      bottomNavigationBar: isTechnician 
+        ? _buildTechnicianNavBar() // 
+        : _buildDefaultNavBar(isAdmin),  
+    );
+  }
+
+  Widget _buildDefaultNavBar(bool isAdmin) {
+    return BottomAppBar(
         shape: const CircularNotchedRectangle(),
         notchMargin: 6.0, 
         child: Row(
@@ -93,6 +142,21 @@ class _BottomNavBarState extends State<BottomNavBar> {
             _buildNavItem(icon: Icons.person, label: 'Profile', index: 4),
           ],
         ),
+      );
+  }
+
+    Widget _buildTechnicianNavBar() {
+    // Example: remove the gap for the FAB. 
+    return BottomAppBar(
+      // no notch if no floatingActionButton
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          _buildNavItem(icon: Icons.home, label: 'Home', index: 0),
+          _buildNavItem(icon: Icons.map_outlined, label: 'Reports', index: 1),
+          _buildNavItem(icon: Icons.pie_chart, label: 'Dashboard', index: 3),
+          _buildNavItem(icon: Icons.person, label: 'Profile', index: 4),
+        ],
       ),
     );
   }

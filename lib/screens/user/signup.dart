@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:ku_report_app/theme/color.dart';
@@ -38,10 +39,20 @@ class _SignUpPageState extends State<SignUpPage> {
     });
 
     try {
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      UserCredential userCred = await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text,
       );
+
+      final uid = userCred.user!.uid;
+
+      await FirebaseFirestore.instance.collection('users').doc(uid).set({
+        'email': _emailController.text.trim(),
+        'role': 'User', // or "Technician" or "Admin" depending on your logic
+        'name': '',
+        'phoneNumber': '',
+        // you can store other fields here too, like displayName, phone, etc.
+      });
 
       if (mounted) {
         Navigator.pushReplacementNamed(context, '/home');
