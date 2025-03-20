@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # ku_report_app
 
 A new Flutter project.
@@ -14,3 +15,6 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
+=======
+# KU-Reporting-app
+>>>>>>> bcadda72654b316ad8606fcf80693ea1776640e3
