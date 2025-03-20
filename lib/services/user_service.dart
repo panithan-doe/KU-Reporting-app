@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class FirestoreService {
+class UserService {
   // get collection of user
   final CollectionReference user = FirebaseFirestore.instance.collection('user');
 
@@ -34,5 +34,4 @@ class FirestoreService {
   Future<void> deleteUser(String docID) {
     return user.doc(docID).delete();
   }
-
 }
