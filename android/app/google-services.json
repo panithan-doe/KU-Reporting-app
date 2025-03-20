@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "128318604608",
+    "project_id": "ku-reporting-authen",
+    "storage_bucket": "ku-reporting-authen.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:128318604608:android:b64fc0d367759e04f426a5",
+        "android_client_info": {
+          "package_name": "com.example.ku_report_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBX_bgaQn99bVjvamS87KWY_FUvAYyKNYQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
