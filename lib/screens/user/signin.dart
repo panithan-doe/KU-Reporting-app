@@ -114,8 +114,27 @@ class _SignInPageState extends State<SignInPage> {
       // Sign in with Firebase
       await FirebaseAuth.instance.signInWithCredential(credential);
 
-      if (mounted) {
-        Navigator.pushReplacementNamed(context, '/home');
+      // 1. Get the current sign-in user
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        // 2. Check if Firestore doc exists for this user
+        final docRef = FirebaseFirestore.instance.collection('users').doc(user.uid);
+        final docSnap = await docRef.get();
+
+        // 3. If it doesn't exist, create user
+        if (!docSnap.exists) {
+          await docRef.set({
+            'email': user.email,
+            'role': 'User',
+            'phoneNumber': '',
+            'name': '',
+          });
+        }
+
+        // 4. Navigate to home
+        if (mounted) {
+          Navigator.pushReplacementNamed(context, '/home');
+        }
       }
     } catch (e) {
       setState(() {

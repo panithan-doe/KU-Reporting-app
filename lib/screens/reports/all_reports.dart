@@ -11,13 +11,13 @@ class AllReportsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F4F0),
+      backgroundColor: const Color(0xFFF2F5F7),
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(100),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: AppBar(
-            backgroundColor: const Color(0xFFF6F4F0),
+            backgroundColor: const Color(0xFFF2F5F7),
             title: const Text(
               "Reports",
               style: TextStyle(fontSize: 32, fontWeight: FontWeight.w500),
@@ -45,7 +45,7 @@ class AllReportsScreen extends StatelessWidget {
         ),
       ),
       body: Container(
-        color: const Color(0xFFF6F4F0),
+        color: const Color(0xFFF2F5F7),
         child: StreamBuilder<QuerySnapshot>(
           stream: reportService.getAllReportStream(),
           builder: (context, snapshot) {
@@ -84,20 +84,17 @@ class AllReportsScreen extends StatelessWidget {
                         DocumentSnapshot document = reportList[index];
                         Map<String, dynamic> data =
                             document.data() as Map<String, dynamic>;
-                        String image = data['image'];
-                        String title = data['title'];
-                        String location = data['location'];
-                        String status = data['status'];
-                        String postDate = data['postDate'];
-                        String category = data['category'];
+                        
+                        String docId = document.id;
 
                         return ListTileReport(
-                          image: image,
-                          title: title,
-                          location: location,
-                          status: status,
-                          postDate: postDate,
-                          category: category,
+                          docId: docId,
+                          image: data['image'],
+                          title: data['title'],
+                          location: data['location'],
+                          status: data['status'],
+                          postDate: data['postDate'],
+                          category: data['category'],
                         );
                       },
                     ),

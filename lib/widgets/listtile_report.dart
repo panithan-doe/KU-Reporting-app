@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:ku_report_app/screens/reports/report_info.dart';
 
 class ListTileReport extends StatelessWidget {
   const ListTileReport({
     super.key,
+    required this.docId,
     required this.image,
     required this.title,
     required this.location,
     required this.status,
     required this.category,
     required this.postDate,
-
   });
 
+  final String docId;
   final String image;
   final String title;
   final String location;
@@ -24,7 +26,12 @@ class ListTileReport extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        // ... push report_info screen
+        Navigator.push(
+          context, 
+          MaterialPageRoute(
+            builder: (context) => ReportInfo(docId: docId,)
+          )
+        );
       },
       child: Container(
         height: 72,

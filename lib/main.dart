@@ -34,7 +34,6 @@ class MyApp extends StatelessWidget {
   }
 }
 
-
 class AuthWrapper extends StatelessWidget {
   const AuthWrapper({super.key});
 
@@ -46,7 +45,10 @@ class AuthWrapper extends StatelessWidget {
       // Not logged in => sign in
       return SignInPage();
     } else {
-      // Already logged in => fetch the role
+      // User is already logged in, so let's print their email
+      print('Current user email: ${user.email}');
+
+      // Now proceed to check Firestore for the user's role
       return FutureBuilder(
         future: FirebaseFirestore.instance
             .collection('users')
@@ -69,7 +71,6 @@ class AuthWrapper extends StatelessWidget {
           }
 
           final role = snapshot.data!['role'] as String? ?? 'User';
-
           return BottomNavBar(role: role);
         },
       );
