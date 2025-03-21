@@ -20,29 +20,21 @@ class ListTileReport extends StatelessWidget {
   final String status;
   final String category;
   final String postDate;
-  
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
         Navigator.push(
-          context, 
-          MaterialPageRoute(
-            builder: (context) => ReportInfo(docId: docId,)
-          )
+          context,
+          MaterialPageRoute(builder: (context) => ReportInfo(docId: docId)),
         );
       },
       child: Container(
         height: 72,
         decoration: BoxDecoration(
           color: Colors.white,
-          border: Border(
-            bottom: BorderSide(
-              color: Colors.grey,
-              width: 0.5,
-            ),
-          ),
+          border: Border(bottom: BorderSide(color: Colors.grey, width: 0.5)),
         ),
         child: Padding(
           padding: EdgeInsets.all(8.0),
@@ -60,25 +52,35 @@ class ListTileReport extends StatelessWidget {
                     child: SizedBox(
                       height: 60,
                       width: 60,
-                      child: Image.asset(image, fit: BoxFit.cover,),
-                    )
-                    
+                      child: Image.asset(image, fit: BoxFit.cover),
+                    ),
                   ),
-                  
-                  SizedBox(
-                    width: 14,
-                  ),
+
+                  SizedBox(width: 14),
 
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       // Title
-                      Text(title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),),
+                      Text(
+                        title.length > 18
+                            ? '${title.substring(0, 18)}...'
+                            : title,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                       // Subtitle
-                      Text(location, style: TextStyle(color: Colors.grey),),
+                      Text(
+                        location.length < 18
+                            ? location
+                            : '${location.substring(0, 18)}...',
+                        style: TextStyle(color: Colors.grey),
+                      ),
                     ],
-                  )
+                  ),
                 ],
               ),
 
@@ -88,23 +90,32 @@ class ListTileReport extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   // Status
-                  Text(status, style: TextStyle(color: 
-                    status == "In progress" ? Colors.orange
-                      : status == "Pending" ? Colors.blue
-                      : status == "Canceled" ? Colors.red
-                      : status == "Completed" ? Colors.green
-                      : Colors.grey
-                    ),),
+                  Text(
+                    status,
+                    style: TextStyle(
+                      color:
+                          status == "In progress"
+                              ? Colors.orange
+                              : status == "Pending"
+                              ? Colors.blue
+                              : status == "Canceled"
+                              ? Colors.red
+                              : status == "Completed"
+                              ? Colors.green
+                              : Colors.grey,
+                    ),
+                  ),
                   // Post Date
-                  Text('Post date: $postDate', style: TextStyle(color: Colors.grey),),
+                  Text(
+                    'Post date: $postDate',
+                    style: TextStyle(color: Colors.grey),
+                  ),
                 ],
-              )
+              ),
             ],
           ),
-        )
+        ),
       ),
     );
-    
   }
-
 }

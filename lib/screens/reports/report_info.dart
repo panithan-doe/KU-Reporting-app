@@ -1,62 +1,115 @@
+// import 'package:cloud_firestore/cloud_firestore.dart';
+// import 'package:firebase_auth/firebase_auth.dart';
+// import 'package:flutter/material.dart';
+// import 'package:ku_report_app/widgets/go_back_appbar.dart';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:ku_report_app/services/report_service.dart';
 import 'package:ku_report_app/widgets/go_back_appbar.dart';
 
 class ReportInfo extends StatelessWidget {
-  const ReportInfo({super.key, required this.docId});
-
   final String docId;
+
+  const ReportInfo({super.key, required this.docId});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Color(0xFFF2F5F7),
-      appBar: GoBackAppBar(titleText: "Report info"),
-      body: StreamBuilder<DocumentSnapshot>(
-        stream:
-            FirebaseFirestore.instance
-                .collection('reports')
-                .doc(docId)
-                .snapshots(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
+    // 1) Get the current user
+    final user = FirebaseAuth.instance.currentUser;
 
-          final data = snapshot.data!.data() as Map<String, dynamic>?;
-          if (data == null) {
-            return const Center(child: Text('No data found'));
-          }
+    // If the user is somehow null, just show something
+    if (user == null) {
+      return const Scaffold(
+        body: Center(child: Text('No logged-in user found.')),
+      );
+    }
 
-          final title = data['title'];
-          final postDate = data['postDate'];
-          final category = data['category'];
-          final status = data['status'];
-          final location = data['location'];
-          final description = data['description'];
-
-          return Padding(
-            padding: EdgeInsets.all(20.0),
-            child: Column(
-              children: [
-                ImageDetails(),
-                SizedBox(height: 24),
-
-                HeaderDetails(title: title, status: status, postDate: postDate),
-                SizedBox(height: 24),
-
-                BodyDetails(
-                  category: category,
-                  location: location,
-                  description: description,
-                ), // category, location, description
-                SizedBox(height: 24),
-                ChangeStatusButton(status: status),
-              ],
-            ),
+    // 2) FutureBuilder for user doc (which has the "role")
+    return FutureBuilder<DocumentSnapshot>(
+      future:
+          FirebaseFirestore.instance.collection('users').doc(user.uid).get(),
+      builder: (context, userSnapshot) {
+        if (userSnapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
           );
-        },
-      ),
+        }
+        if (!userSnapshot.hasData || !userSnapshot.data!.exists) {
+          return const Scaffold(
+            body: Center(child: Text('No user record found.')),
+          );
+        }
+
+        final userData = userSnapshot.data!.data() as Map<String, dynamic>;
+        final userRole = userData['role'] as String? ?? 'User';
+
+        // 3) Now that we have userRole, build the StreamBuilder for the report
+        return Scaffold(
+          backgroundColor: const Color(0xFFF2F5F7),
+          appBar: GoBackAppBar(titleText: "Report info"),
+          body: StreamBuilder<DocumentSnapshot>(
+            stream:
+                FirebaseFirestore.instance
+                    .collection('reports')
+                    .doc(docId)
+                    .snapshots(),
+            builder: (context, reportSnapshot) {
+              if (!reportSnapshot.hasData) {
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              final data = reportSnapshot.data!.data() as Map<String, dynamic>?;
+              if (data == null) {
+                return const Center(child: Text('No data found'));
+              }
+
+              // Extract fields from the "reports" doc
+              final title = data['title'] as String;
+              final postDate = data['postDate'] as String;
+              final category = data['category'] as String;
+              final status = data['status'] as String;
+              final location = data['location'] as String;
+              final description = data['description'] as String;
+
+              return Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  children: [
+                    ImageDetails(),
+                    const SizedBox(height: 20),
+
+                    HeaderDetails(
+                      title: title,
+                      status: status,
+                      postDate: postDate,
+                    ),
+                    const SizedBox(height: 20),
+
+                    BodyDetails(
+                      category: category,
+                      location: location,
+                      description: description,
+                    ),
+                    const SizedBox(height: 20),
+
+                    // // If the current user is a normal "User":
+                    // if (userRole == 'User' || userRole == 'Admin') ...[
+                    //   BottomStatusContainer(status: status),
+                    // ],
+
+                    // If the current user is a "Technician":
+                    if (userRole == 'Technician') ...[
+                      ChangeStatusButton(docId: docId, status: status),
+                    ],
+                  ],
+                ),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 }
@@ -71,7 +124,7 @@ class ImageDetails extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       // color: Colors.amber,
-      height: 180,
+      height: 172,
       child: PageView(
         controller: _pageController,
         children: [
@@ -262,9 +315,8 @@ class BodyDetails extends StatelessWidget {
   }
 }
 
-// BUTTON SECTION ()
-class ChangeStatusButton extends StatelessWidget {
-  const ChangeStatusButton({super.key, required this.status});
+class BottomStatusContainer extends StatelessWidget {
+  const BottomStatusContainer({super.key, required this.status});
 
   final String status;
 
@@ -275,23 +327,19 @@ class ChangeStatusButton extends StatelessWidget {
 
     switch (status) {
       case 'In progress':
-        backgroundButtonColor = Colors.orange.shade100;
-        textButtonColor = Colors.orange;
+        backgroundButtonColor = Colors.orange;
         break;
       case 'Pending':
-        backgroundButtonColor = Colors.blue.shade100;
-        textButtonColor = Colors.blue;
+        backgroundButtonColor = Colors.blue;
         break;
       case 'Canceled':
-        backgroundButtonColor = Colors.red.shade100;
-        textButtonColor = Colors.red;
+        backgroundButtonColor = Colors.red;
         break;
       case 'Completed':
-        backgroundButtonColor = Colors.green.shade100;
-        textButtonColor = Colors.green;
+        backgroundButtonColor = Colors.green;
         break;
       default:
-        backgroundButtonColor = Colors.grey.shade200;
+        backgroundButtonColor = Colors.grey;
         textButtonColor = Colors.grey;
     }
 
@@ -320,15 +368,258 @@ class ChangeStatusButton extends StatelessWidget {
             // Icon if completed
             if (status == 'Completed') ...[
               SizedBox(width: 4),
-              Icon(
-                Icons.check_circle,
-                size: 32,
-                color: textButtonColor,
-              ),
+              Icon(Icons.check_circle, size: 32, color: textButtonColor),
             ],
           ],
         ),
       ),
     );
+  }
+}
+
+class ChangeStatusButton extends StatelessWidget {
+  final String docId;
+  final String status;
+
+  ChangeStatusButton({super.key, required this.docId, required this.status});
+
+  final ReportService _reportService = ReportService();
+
+  @override
+  Widget build(BuildContext context) {
+    late Color backgroundButtonColor;
+
+    switch (status) {
+      case 'Pending':
+        backgroundButtonColor = Colors.orange;
+        return Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            InkWell(
+              onTap: () => _reportService.updateStatus(docId, 'In progress'),
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 8),
+                height: 56,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(4),
+                  color: backgroundButtonColor,
+                ),
+                child: Center(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Text
+                      Text(
+                        'Start Work',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(height: 8),
+            InkWell(
+              onTap: () => _reportService.updateStatus(docId, 'Canceled'),
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 8),
+                height: 56,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(4),
+                  color: Colors.white,
+                ),
+                child: Center(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Text
+                      Text(
+                        'Cancel Work',
+                        style: TextStyle(
+                          color: Colors.red,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+
+      case 'In progress':
+        backgroundButtonColor = Colors.green;
+        return Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            InkWell(
+              onTap: () => _reportService.updateStatus(docId, 'Completed'),
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 8),
+                height: 56,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(4),
+                  color: backgroundButtonColor,
+                ),
+                child: Center(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Text
+                      Text(
+                        'Complete Work',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(height: 8),
+            InkWell(
+              onTap: () => _reportService.updateStatus(docId, 'Canceled'),
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 8),
+                height: 56,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(4),
+                  color: Colors.white,
+                ),
+                child: Center(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Text
+                      Text(
+                        'Cancel Work',
+                        style: TextStyle(
+                          color: Colors.red,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+
+      case 'Completed':
+        backgroundButtonColor = Colors.green.shade100;
+        return InkWell(
+          onTap: null, // disabled
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 8),
+            height: 56,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(4),
+              color: backgroundButtonColor,
+            ),
+            child: Center(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Text
+                  Text(
+                    'Completed',
+                    style: TextStyle(
+                      color: Colors.green,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(width: 4),
+                  Icon(Icons.check_circle, size: 32, color: Colors.green),
+                ],
+              ),
+            ),
+          ),
+        );
+
+      case 'Canceled':
+        backgroundButtonColor = Colors.red.shade100;
+        return Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            InkWell(
+              onTap: null,
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 8),
+                height: 56,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(4),
+                  color: Colors.grey[400],
+                ),
+                child: Center(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Text
+                      Text(
+                        'Canceled',
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(height: 8),
+            InkWell(
+              onTap: () => _reportService.updateStatus(docId, 'In progress'),
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 8),
+                height: 56,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(4),
+                  color: Colors.white,
+                ),
+                child: Center(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Text
+                      Text(
+                        'Undo Cancellation',
+                        style: TextStyle(
+                          color: Colors.orange,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+
+      default:
+        return const SizedBox.shrink();
+    }
   }
 }

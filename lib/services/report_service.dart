@@ -15,7 +15,12 @@ class ReportService {
     return reportStream;
   }
 
-  // UPDATE: update status
+  // UPDATE: update status to "In progress"
+  Future<void> updateStatus(String docID, String status) {
+    return report.doc(docID).update({
+      'status': status
+    });
+  }
 
   // delete: delete report
 
