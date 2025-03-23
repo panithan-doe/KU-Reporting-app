@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ReportService {
   // get collection of report
@@ -13,6 +14,20 @@ class ReportService {
     final reportStream = report.orderBy('postDate', descending: false).snapshots();
 
     return reportStream;
+  }
+
+  // READ: get reports by userId
+  Stream<QuerySnapshot> getReportOfCurrentUserId() {
+    // get current user
+    final currentUser = FirebaseAuth.instance.currentUser;
+    print("this isssssssssssssss ${currentUser?.uid}");
+
+    final reportStream = report
+      .where('userId', isEqualTo: currentUser?.uid)
+      // .orderBy('postDate')
+      .snapshots();
+
+      return reportStream;
   }
 
   // UPDATE: update status to "In progress"

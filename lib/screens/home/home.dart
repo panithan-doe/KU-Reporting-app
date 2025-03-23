@@ -1,6 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:ku_report_app/screens/dashboard/dashboard.dart';
 import 'package:ku_report_app/screens/reports/all_reports.dart';
+import 'package:ku_report_app/services/report_service.dart';
+import 'package:ku_report_app/widgets/listtile_report.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -8,9 +11,9 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[200],
+      backgroundColor: const Color(0xFFF2F5F7),
       appBar: const CustomAppBar(),
-      body: const Padding(
+      body: Padding(
         padding: EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -148,20 +151,63 @@ class DashboardCard extends StatelessWidget {
 }
 
 class ReportsSection extends StatelessWidget {
-  const ReportsSection({super.key});
+  ReportsSection({super.key});
+
+  final ReportService reportService = ReportService();
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Column(
       children: [
-        const Text(
-          'My reports',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        // Header
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'My reports',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            TextButton(onPressed: () {}, child: const Text('View all')),
+          ],
         ),
-        TextButton(
-          onPressed: () {},
-          child: const Text('View all'),
+
+        SizedBox(height: 16),
+        // List of My Reports
+        Container(
+          height: 300,
+          color: const Color(0xFFF2F5F7),
+          child: StreamBuilder<QuerySnapshot>(
+            stream: reportService.getReportOfCurrentUserId(),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              final reportList = snapshot.data!.docs;
+
+              return Expanded(
+                child: ListView.builder(
+                  itemCount: reportList.length,
+                  itemBuilder: (context, index) {
+                    DocumentSnapshot document = reportList[index];
+                    Map<String, dynamic> data =
+                        document.data() as Map<String, dynamic>;
+
+                    String docId = document.id;
+
+                    return ListTileReport(
+                      docId: docId,
+                      image: data['image'],
+                      title: data['title'],
+                      location: data['location'],
+                      status: data['status'],
+                      postDate: data['postDate'],
+                      category: data['category'],
+                    );
+                  },
+                ),
+              );
+            },
+          ),
         ),
       ],
     );
