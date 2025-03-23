@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:ku_report_app/screens/reports/my_reports.dart';
 import 'package:ku_report_app/services/report_service.dart';
 import 'package:ku_report_app/widgets/listtile_report.dart';
 
@@ -25,7 +26,7 @@ class AllReportsScreen extends StatelessWidget {
             actions: [
               ElevatedButton(
                 onPressed: () {
-                  // ...
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => MyReportsPage()));
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF50808E),

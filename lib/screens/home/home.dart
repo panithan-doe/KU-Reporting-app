@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:ku_report_app/screens/dashboard/dashboard.dart';
 import 'package:ku_report_app/screens/reports/all_reports.dart';
+import 'package:ku_report_app/screens/reports/my_reports.dart';
 import 'package:ku_report_app/services/report_service.dart';
 import 'package:ku_report_app/widgets/listtile_report.dart';
 
@@ -167,7 +168,15 @@ class ReportsSection extends StatelessWidget {
               'My reports',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
-            TextButton(onPressed: () {}, child: const Text('View all')),
+            TextButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => MyReportsPage()),
+                );
+              }, 
+              child: const Text('View all')
+            ),
           ],
         ),
 
