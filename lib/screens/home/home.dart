@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:ku_report_app/screens/dashboard/dashboard.dart';
 import 'package:ku_report_app/screens/reports/all_reports.dart';
 import 'package:ku_report_app/screens/reports/my_reports.dart';
+import 'package:ku_report_app/screens/user/notification.dart';
 import 'package:ku_report_app/services/report_service.dart';
 import 'package:ku_report_app/widgets/listtile_report.dart';
 
@@ -51,9 +52,16 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                 fit: BoxFit.contain,
               ),
               IconButton(
-                icon: const Icon(Icons.notifications_none, size: 28),
-                onPressed: () {},
-              ),
+  icon: const Icon(Icons.notifications_none, size: 28),
+  onPressed: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const NotificationScreen(), // ✅ ไปยังหน้า Notification
+      ),
+    );
+  },
+),
             ],
           ),
         ),
