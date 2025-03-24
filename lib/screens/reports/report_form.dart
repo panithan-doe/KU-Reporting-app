@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 import 'package:ku_report_app/widgets/go_back_appbar.dart';
 
 class ReportFormScreen extends StatefulWidget {
@@ -14,6 +15,15 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
   final List<File> _images = [];
   final ImagePicker _picker = ImagePicker();
   static const int maxImages = 3;
+
+  String? _selectedCategory;
+  final DateTime _currentDate = DateTime.now();
+
+  @override
+  void initState() {
+    super.initState();
+    // ไม่ต้อง set _currentDate อีก
+  }
 
   Future<void> _pickImageFromGallery() async {
     if (_images.length >= maxImages) return;
@@ -66,7 +76,15 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              const ReportFormFields(),
+              ReportFormFields(
+                selectedCategory: _selectedCategory,
+                onCategoryChanged: (value) {
+                  setState(() {
+                    _selectedCategory = value;
+                  });
+                },
+                currentDate: _currentDate,
+              ),
               const SizedBox(height: 24),
               const SubmitButton(),
             ],
@@ -108,40 +126,47 @@ class ReportImagePicker extends StatelessWidget {
             child: Center(
               child: SizedBox(
                 height: 100,
-                child: ListView.separated(
-                  shrinkWrap: true,
-                  scrollDirection: Axis.horizontal,
-                  itemCount: images.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 12),
-                  itemBuilder: (context, index) {
-                    return Stack(
-                      children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: Image.file(
-                            images[index],
-                            width: 100,
-                            height: 100,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                        Positioned(
-                          top: 0,
-                          right: 0,
-                          child: GestureDetector(
-                            onTap: () => onRemoveImage(index),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.black.withOpacity(0.5),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(Icons.close, color: Colors.white, size: 20),
+                child: Align(
+                  alignment: Alignment.center,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    shrinkWrap: true,
+                    itemCount: images.length,
+                    separatorBuilder: (_, __) => const SizedBox(width: 12),
+                    itemBuilder: (context, index) {
+                      return Stack(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: Image.file(
+                              images[index],
+                              width: 100,
+                              height: 100,
+                              fit: BoxFit.cover,
                             ),
                           ),
-                        )
-                      ],
-                    );
-                  },
+                          Positioned(
+                            top: 0,
+                            right: 0,
+                            child: GestureDetector(
+                              onTap: () => onRemoveImage(index),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withOpacity(0.5),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.close,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
                 ),
               ),
             ),
@@ -178,7 +203,16 @@ class ReportImagePicker extends StatelessWidget {
 }
 
 class ReportFormFields extends StatelessWidget {
-  const ReportFormFields({super.key});
+  final String? selectedCategory;
+  final void Function(String?) onCategoryChanged;
+  final DateTime currentDate;
+
+  const ReportFormFields({
+    super.key,
+    required this.selectedCategory,
+    required this.onCategoryChanged,
+    required this.currentDate,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -186,14 +220,77 @@ class ReportFormFields extends StatelessWidget {
       children: [
         _buildTextField("Title"),
         const SizedBox(height: 16),
-        _buildDropdownField("Category"),
+        DropdownButtonFormField<String>(
+          value: selectedCategory,
+          onChanged: onCategoryChanged,
+          decoration: InputDecoration(
+            hintText: "Category",
+            filled: true,
+            fillColor: Colors.grey[100],
+            border: OutlineInputBorder(
+              borderSide: BorderSide.none,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 14,
+            ),
+          ),
+          items: const [
+            DropdownMenuItem(
+              value: "ไฟฟ้า",
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 12),
+                child: Text("ไฟฟ้า", style: TextStyle(fontSize: 18)),
+              ),
+            ),
+            DropdownMenuItem(
+              value: "ถนน",
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 12),
+                child: Text("ถนน", style: TextStyle(fontSize: 18)),
+              ),
+            ),
+            DropdownMenuItem(
+              value: "อุปกรณ์",
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 12),
+                child: Text("อุปกรณ์", style: TextStyle(fontSize: 18)),
+              ),
+            ),
+            DropdownMenuItem(
+              value: "อื่นๆ",
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 12),
+                child: Text("อื่นๆ", style: TextStyle(fontSize: 18)),
+              ),
+            ),
+          ],
+        ),
         const SizedBox(height: 16),
         _buildLocationPicker(context),
         const SizedBox(height: 16),
-        _buildDatePicker(context),
+        _buildDateDisplay(currentDate),
         const SizedBox(height: 16),
         _buildDescriptionField(),
       ],
+    );
+  }
+
+  Widget _buildDateDisplay(DateTime date) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.grey[100],
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: ListTile(
+        leading: const Icon(Icons.calendar_today),
+        title: Text(
+          DateFormat('dd/MM/yyyy').format(date),
+          style: const TextStyle(fontSize: 16),
+        ),
+        trailing: const Icon(Icons.lock_clock),
+      ),
     );
   }
 
@@ -207,27 +304,11 @@ class ReportFormFields extends StatelessWidget {
           borderSide: BorderSide.none,
           borderRadius: BorderRadius.circular(8),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      ),
-    );
-  }
-
-  Widget _buildDropdownField(String label) {
-    return DropdownButtonFormField<String>(
-      decoration: InputDecoration(
-        hintText: label,
-        filled: true,
-        fillColor: Colors.grey[100],
-        border: OutlineInputBorder(
-          borderSide: BorderSide.none,
-          borderRadius: BorderRadius.circular(8),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
-      items: const [
-        DropdownMenuItem(child: Text("Category"), value: "category"),
-      ],
-      onChanged: (value) {},
     );
   }
 
@@ -246,21 +327,6 @@ class ReportFormFields extends StatelessWidget {
     );
   }
 
-  Widget _buildDatePicker(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.grey[100],
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: ListTile(
-        leading: const Icon(Icons.calendar_today),
-        title: const Text("Add date"),
-        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-        onTap: () {},
-      ),
-    );
-  }
-
   Widget _buildDescriptionField() {
     return TextField(
       maxLines: 4,
@@ -272,7 +338,10 @@ class ReportFormFields extends StatelessWidget {
           borderSide: BorderSide.none,
           borderRadius: BorderRadius.circular(8),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
       ),
     );
   }
@@ -288,7 +357,7 @@ class SubmitButton extends StatelessWidget {
       child: ElevatedButton.icon(
         onPressed: () {},
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.green,
+          backgroundColor: const Color.fromARGB(255, 27, 179, 115),
           padding: const EdgeInsets.symmetric(vertical: 14),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
