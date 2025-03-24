@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:ku_report_app/widgets/go_back_appbar.dart';
+import 'package:ku_report_app/screens/reports/report_success.dart';
 
 class ReportFormScreen extends StatefulWidget {
   const ReportFormScreen({super.key});
@@ -355,7 +356,14 @@ class SubmitButton extends StatelessWidget {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton.icon(
-        onPressed: () {},
+        onPressed: () {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const ReportSuccessScreen(),
+            ),
+          );
+        },
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color.fromARGB(255, 27, 179, 115),
           padding: const EdgeInsets.symmetric(vertical: 14),
