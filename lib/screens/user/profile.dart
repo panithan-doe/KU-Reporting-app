@@ -6,30 +6,31 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final User? user = FirebaseAuth.instance.currentUser; // ดึงข้อมูลผู้ใช้ปัจจุบัน
+    final User? user = FirebaseAuth.instance.currentUser;
 
     return Scaffold(
-      backgroundColor: Colors.grey[200],
-      appBar: AppBar(
-  title: Padding(
-    padding: const EdgeInsets.only(left: 16),
-    child: const Text(
-      "Profile",
-      style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-    ),
-  ),
-  backgroundColor: Colors.grey[200],
-  elevation: 0,
-),
+      backgroundColor: const Color(0xFFF2F5F7),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const SizedBox(height: 70),
+            const Padding(
+              padding: EdgeInsets.only(left: 32), // 👈 เปลี่ยนตรงนี้
+              child: Text(
+                "Profile",
+                style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
             const ProfileHeader(),
             ProfileDetails(user: user),
             const EditProfileButton(),
             const Divider(thickness: 1, height: 20),
-            SignOutButton(),
+            const SignOutButton(),
           ],
         ),
       ),
@@ -45,7 +46,6 @@ class ProfileHeader extends StatelessWidget {
     return Center(
       child: Column(
         children: [
-          const SizedBox(height: 20),
           const CircleAvatar(
             radius: 60,
             backgroundColor: Colors.grey,
@@ -70,7 +70,7 @@ class ProfileDetails extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.grey[200],
+      color: const Color(0xFFF2F5F7),
       padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

@@ -7,7 +7,7 @@ class DashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[200],
+      backgroundColor: const Color(0xFFF2F5F7),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -16,7 +16,7 @@ class DashboardScreen extends StatelessWidget {
             const SizedBox(height: 60),
             const Text(
               'Dashboard',
-              style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 32, fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 24),
             Expanded(
@@ -59,10 +59,11 @@ class FilterSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        _buildFilterButton('ทุกประเภท', isActive: true),
+        _buildFilterButton('All', isActive: true),
         _buildFilterButton('ไฟฟ้า'),
         _buildFilterButton('ถนน'),
         _buildFilterButton('อุปกรณ์'),
+        _buildFilterButton('อื่นๆ'),
       ],
     );
   }
@@ -70,7 +71,7 @@ class FilterSection extends StatelessWidget {
   Widget _buildFilterButton(String title, {bool isActive = false}) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 4),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
         color: isActive ? Colors.green.shade700 : Colors.grey.shade200,
         borderRadius: BorderRadius.circular(12),
@@ -95,10 +96,10 @@ class SummarySection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          'จำนวนปัญหาทั้งหมด 74',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+          'จำนวนปัญหาทั้งหมด 74 รายการ',
+          style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 30),
         _buildStatusRow('รอรับการแก้ไข', 15, Colors.red),
         _buildStatusRow('กำลังดำเนินการ', 24, Colors.orange),
         _buildStatusRow('เสร็จสิ้น', 35, Colors.green),
@@ -112,8 +113,8 @@ class SummarySection extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(title, style: const TextStyle(fontSize: 16)),
-          Text('$count รายการ', style: TextStyle(fontSize: 16, color: color)),
+          Text(title, style: const TextStyle(fontSize: 18)),
+          Text('$count รายการ', style: TextStyle(fontSize: 18, color: color)),
         ],
       ),
     );
@@ -125,16 +126,44 @@ class PieChartSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PieChart(
-      PieChartData(
-        sections: [
-          PieChartSectionData(value: 15, color: Colors.red, title: '15'),
-          PieChartSectionData(value: 24, color: Colors.orange, title: '24'),
-          PieChartSectionData(value: 35, color: Colors.green, title: '35'),
-        ],
-        sectionsSpace: 0,
-        centerSpaceRadius: 40,
-      ),
-    );
-  }
+  return PieChart(
+    PieChartData(
+      sections: [
+        PieChartSectionData(
+          value: 15,
+          color: Colors.red,
+          title: '15',
+          titleStyle: const TextStyle(
+            fontWeight: FontWeight.bold, // ✅ ทำให้ตัวหนา
+            fontSize: 16,
+            color: Colors.white,
+          ),
+        ),
+        PieChartSectionData(
+          value: 24,
+          color: Colors.orange,
+          title: '24',
+          titleStyle: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+            color: Colors.white,
+          ),
+        ),
+        PieChartSectionData(
+          value: 35,
+          color: Colors.green,
+          title: '35',
+          titleStyle: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+            color: Colors.white,
+          ),
+        ),
+      ],
+      sectionsSpace: 0,
+      centerSpaceRadius: 40,
+    ),
+  );
+}
+
 }
