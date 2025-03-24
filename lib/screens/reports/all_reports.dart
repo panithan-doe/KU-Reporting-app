@@ -29,7 +29,7 @@ class AllReportsScreen extends StatelessWidget {
                   Navigator.push(context, MaterialPageRoute(builder: (context) => MyReportsPage()));
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF50808E),
+                  backgroundColor: const Color.fromARGB(255, 27, 179, 115),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(
                     vertical: 6,

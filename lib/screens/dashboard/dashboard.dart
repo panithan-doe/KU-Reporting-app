@@ -73,7 +73,7 @@ class FilterSection extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 4),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: isActive ? Colors.green.shade700 : Colors.grey.shade200,
+        color: isActive ? Color.fromARGB(255, 27, 179, 115) : Colors.grey.shade200,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
@@ -95,30 +95,44 @@ class SummarySection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        const SizedBox(height: 20),
         const Text(
-          'จำนวนปัญหาทั้งหมด 74 รายการ',
+          'จำนวนปัญหาทั้งหมด    74 รายการ',
           style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 30),
-        _buildStatusRow('รอรับการแก้ไข', 15, Colors.red),
-        _buildStatusRow('กำลังดำเนินการ', 24, Colors.orange),
+        _buildStatusRow('รอรับการแก้ไข', 15, Colors.red[400]!),
+        _buildStatusRow('กำลังดำเนินการ', 24, Colors.orange[500]!),
         _buildStatusRow('เสร็จสิ้น', 35, Colors.green),
       ],
     );
   }
 
   Widget _buildStatusRow(String title, int count, Color color) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(title, style: const TextStyle(fontSize: 18)),
-          Text('$count รายการ', style: TextStyle(fontSize: 18, color: color)),
-        ],
-      ),
-    );
-  }
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 4),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600, // ✅ เพิ่มความหนา
+          ),
+        ),
+        Text(
+          '$count รายการ',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600, // ✅ เพิ่มความหนา
+            color: color,
+          ),
+        ),
+      ],
+    ),
+  );
+}
 }
 
 class PieChartSection extends StatelessWidget {
@@ -131,7 +145,7 @@ class PieChartSection extends StatelessWidget {
       sections: [
         PieChartSectionData(
           value: 15,
-          color: Colors.red,
+          color: Colors.red[400]!,
           title: '15',
           titleStyle: const TextStyle(
             fontWeight: FontWeight.bold, // ✅ ทำให้ตัวหนา
@@ -141,7 +155,7 @@ class PieChartSection extends StatelessWidget {
         ),
         PieChartSectionData(
           value: 24,
-          color: Colors.orange,
+          color: Colors.orange[400]!,
           title: '24',
           titleStyle: const TextStyle(
             fontWeight: FontWeight.bold,

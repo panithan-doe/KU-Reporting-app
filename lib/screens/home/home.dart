@@ -79,8 +79,8 @@ class GreetingSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Text(
-      'Good morning, Username',
-      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+      'Hi there, username 👋',
+      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
     );
   }
 }
@@ -174,7 +174,7 @@ class ReportsSection extends StatelessWidget {
           children: [
             const Text(
               'My reports',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             TextButton(
               onPressed: () {
@@ -183,7 +183,7 @@ class ReportsSection extends StatelessWidget {
                   MaterialPageRoute(builder: (context) => MyReportsPage()),
                 );
               }, 
-              child: const Text('View all')
+              child: const Text('View all >')
             ),
           ],
         ),
