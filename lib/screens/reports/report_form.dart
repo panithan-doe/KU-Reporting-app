@@ -11,16 +11,39 @@ class ReportFormScreen extends StatefulWidget {
 }
 
 class _ReportFormScreenState extends State<ReportFormScreen> {
-  File? _image;
+  final List<File> _images = [];
   final ImagePicker _picker = ImagePicker();
+  static const int maxImages = 3;
 
-  Future<void> _pickImage() async {
-    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
+  Future<void> _pickImageFromGallery() async {
+    if (_images.length >= maxImages) return;
+
+    final pickedFiles = await _picker.pickMultiImage();
+    if (pickedFiles.isNotEmpty) {
+      final newImages = pickedFiles
+          .take(maxImages - _images.length)
+          .map((file) => File(file.path));
       setState(() {
-        _image = File(pickedFile.path);
+        _images.addAll(newImages);
       });
     }
+  }
+
+  Future<void> _pickImageFromCamera() async {
+    if (_images.length >= maxImages) return;
+
+    final pickedFile = await _picker.pickImage(source: ImageSource.camera);
+    if (pickedFile != null) {
+      setState(() {
+        _images.add(File(pickedFile.path));
+      });
+    }
+  }
+
+  void _removeImage(int index) {
+    setState(() {
+      _images.removeAt(index);
+    });
   }
 
   @override
@@ -33,7 +56,15 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Center(child: ReportImagePicker(image: _image, onImagePicked: _pickImage)),
+              Center(
+                child: ReportImagePicker(
+                  images: _images,
+                  onPickFromCamera: _pickImageFromCamera,
+                  onPickFromGallery: _pickImageFromGallery,
+                  onRemoveImage: _removeImage,
+                  maxReached: _images.length >= maxImages,
+                ),
+              ),
               const SizedBox(height: 16),
               const ReportFormFields(),
               const SizedBox(height: 24),
@@ -47,35 +78,100 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
 }
 
 class ReportImagePicker extends StatelessWidget {
-  final File? image;
-  final VoidCallback onImagePicked;
+  final List<File> images;
+  final VoidCallback onPickFromCamera;
+  final VoidCallback onPickFromGallery;
+  final Function(int) onRemoveImage;
+  final bool maxReached;
 
-  const ReportImagePicker({super.key, required this.image, required this.onImagePicked});
+  const ReportImagePicker({
+    super.key,
+    required this.images,
+    required this.onPickFromCamera,
+    required this.onPickFromGallery,
+    required this.onRemoveImage,
+    required this.maxReached,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Text(image == null ? "No photo" : "Photo selected", style: const TextStyle(color: Colors.grey)),
-        const SizedBox(height: 8),
-        Stack(
-          alignment: Alignment.center,
-          children: [
-            CircleAvatar(
-              radius: 40,
-              backgroundColor: Colors.grey[300],
-              backgroundImage: image != null ? FileImage(image!) : null,
-              child: image == null ? const Icon(Icons.camera_alt, size: 30, color: Colors.white) : null,
-            ),
-            Positioned(
-              right: 0,
-              child: IconButton(
-                icon: const Icon(Icons.photo_library, color: Colors.grey),
-                onPressed: onImagePicked,
+        if (images.isEmpty)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 32),
+            child: Text("No photo", style: TextStyle(color: Colors.grey)),
+          )
+        else
+          Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: Center(
+              child: SizedBox(
+                height: 100,
+                child: ListView.separated(
+                  shrinkWrap: true,
+                  scrollDirection: Axis.horizontal,
+                  itemCount: images.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 12),
+                  itemBuilder: (context, index) {
+                    return Stack(
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.file(
+                            images[index],
+                            width: 100,
+                            height: 100,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                        Positioned(
+                          top: 0,
+                          right: 0,
+                          child: GestureDetector(
+                            onTap: () => onRemoveImage(index),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.black.withOpacity(0.5),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.close, color: Colors.white, size: 20),
+                            ),
+                          ),
+                        )
+                      ],
+                    );
+                  },
+                ),
               ),
+            ),
+          ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.camera_alt),
+              iconSize: 48,
+              color: maxReached ? Colors.grey : Colors.blueGrey,
+              onPressed: maxReached ? null : onPickFromCamera,
+            ),
+            const SizedBox(width: 24),
+            IconButton(
+              icon: const Icon(Icons.photo),
+              iconSize: 48,
+              color: maxReached ? Colors.grey : Colors.blueGrey,
+              onPressed: maxReached ? null : onPickFromGallery,
             ),
           ],
         ),
+        if (maxReached)
+          const Padding(
+            padding: EdgeInsets.only(top: 8),
+            child: Text(
+              "You can upload up to 3 photos.",
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
       ],
     );
   }
@@ -104,8 +200,14 @@ class ReportFormFields extends StatelessWidget {
   Widget _buildTextField(String label) {
     return TextField(
       decoration: InputDecoration(
-        labelText: label,
-        border: OutlineInputBorder(),
+        hintText: label,
+        filled: true,
+        fillColor: Colors.grey[100],
+        border: OutlineInputBorder(
+          borderSide: BorderSide.none,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
     );
   }
@@ -113,29 +215,49 @@ class ReportFormFields extends StatelessWidget {
   Widget _buildDropdownField(String label) {
     return DropdownButtonFormField<String>(
       decoration: InputDecoration(
-        labelText: label,
-        border: OutlineInputBorder(),
+        hintText: label,
+        filled: true,
+        fillColor: Colors.grey[100],
+        border: OutlineInputBorder(
+          borderSide: BorderSide.none,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
-      items: const [DropdownMenuItem(child: Text("Category"), value: "category")],
+      items: const [
+        DropdownMenuItem(child: Text("Category"), value: "category"),
+      ],
       onChanged: (value) {},
     );
   }
 
   Widget _buildLocationPicker(BuildContext context) {
-    return ListTile(
-      leading: const Icon(Icons.location_on),
-      title: const Text("Add location"),
-      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-      onTap: () {},
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.grey[100],
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: ListTile(
+        leading: const Icon(Icons.location_on),
+        title: const Text("Add location"),
+        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+        onTap: () {},
+      ),
     );
   }
 
   Widget _buildDatePicker(BuildContext context) {
-    return ListTile(
-      leading: const Icon(Icons.calendar_today),
-      title: const Text("Add date"),
-      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-      onTap: () {},
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.grey[100],
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: ListTile(
+        leading: const Icon(Icons.calendar_today),
+        title: const Text("Add date"),
+        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+        onTap: () {},
+      ),
     );
   }
 
@@ -143,8 +265,14 @@ class ReportFormFields extends StatelessWidget {
     return TextField(
       maxLines: 4,
       decoration: InputDecoration(
-        labelText: "Description",
-        border: OutlineInputBorder(),
+        hintText: "Description",
+        filled: true,
+        fillColor: Colors.grey[100],
+        border: OutlineInputBorder(
+          borderSide: BorderSide.none,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
     );
   }
@@ -155,21 +283,17 @@ class SubmitButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: ElevatedButton(
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton.icon(
         onPressed: () {},
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.green,
-          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
-        child: const Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.send, color: Colors.white),
-            SizedBox(width: 8),
-            Text('Send Report', style: TextStyle(color: Colors.white)),
-          ],
-        ),
+        icon: const Icon(Icons.send, color: Colors.white),
+        label: const Text('Send Report', style: TextStyle(color: Colors.white)),
       ),
     );
   }
