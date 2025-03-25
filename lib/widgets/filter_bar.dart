@@ -3,26 +3,24 @@ import 'package:flutter/material.dart';
 // import 'package:flutter/material.dart';
 
 class FilterBar extends StatelessWidget {
+  const FilterBar({super.key, this.onSortTap, this.currentSort, required this.reportsLength});
   // New callback to handle sort tapping
   final VoidCallback? onSortTap;
   final String? currentSort;
+  final int reportsLength;
 
-  const FilterBar({
-    super.key,
-    this.onSortTap,
-    this.currentSort,
-  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: Colors.white,
+    return SizedBox(
+      // color: Colors.white,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.end,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             // Pass the onSortTap and current sort text down
+            Text('$reportsLength Reports'),
             FilterDropdown(
               filterText: currentSort ?? 'Sort by',
               onTap: onSortTap,
@@ -38,11 +36,7 @@ class FilterDropdown extends StatelessWidget {
   final String filterText;
   final VoidCallback? onTap;
 
-  const FilterDropdown({
-    super.key,
-    required this.filterText,
-    this.onTap,
-  });
+  const FilterDropdown({super.key, required this.filterText, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +45,11 @@ class FilterDropdown extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.only(left: 12, top: 4, bottom: 4),
         decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey, width: 0.5),
+          color: filterText == 'Oldest' ? Colors.blue[50] : Colors.transparent,
+          border: Border.all(
+            color: filterText == 'Oldest' 
+              ? Colors.blue 
+              : Colors.grey, width: 0.5),
           borderRadius: BorderRadius.circular(50),
         ),
         child: Row(
@@ -60,14 +58,13 @@ class FilterDropdown extends StatelessWidget {
               filterText,
               style: TextStyle(
                 fontSize: 16,
-                color: Colors.grey[400],
+                color: filterText == 'Oldest'
+                  ? Colors.blue[400]
+                  : Colors.grey[400],
                 fontWeight: FontWeight.bold,
               ),
             ),
-            Icon(
-              Icons.arrow_drop_down,
-              color: Colors.grey[400],
-            ),
+            Icon(Icons.arrow_drop_down, color: filterText == 'Oldest' ? Colors.blue[100] : Colors.grey[400]),
           ],
         ),
       ),

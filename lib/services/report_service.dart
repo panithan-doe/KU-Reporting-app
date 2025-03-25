@@ -10,10 +10,10 @@ class ReportService {
   // CREATE: add a new report
 
   // READ: get all report
-  Stream<QuerySnapshot> getAllReportStream() {
-    final reportStream = report.orderBy('postDate', descending: false).snapshots();
-
-    return reportStream;
+  Stream<QuerySnapshot> getAllReportStream({bool descending = true}) {
+    // Return all reports ordered by 'postDate'
+    // If descending == true, we get newest first; if false, oldest first.
+    return report.orderBy('postDate', descending: descending).snapshots();
   }
 
   // READ: get reports by userId
