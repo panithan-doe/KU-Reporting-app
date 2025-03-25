@@ -37,7 +37,7 @@ class ListTileReport extends StatelessWidget {
           border: Border(bottom: BorderSide(color: Colors.grey, width: 0.5)),
         ),
         child: Padding(
-          padding: EdgeInsets.all(8.0),
+          padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
 
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,

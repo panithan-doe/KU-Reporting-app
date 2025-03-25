@@ -17,17 +17,28 @@ class ReportService {
   }
 
   // READ: get reports by userId
-  Stream<QuerySnapshot> getReportOfCurrentUserId() {
+  // Stream<QuerySnapshot> getReportOfCurrentUserId() {
+  //   // get current user
+  //   final currentUser = FirebaseAuth.instance.currentUser;
+  //   print("this isssssssssssssss ${currentUser?.uid}");
+
+  //   final reportStream = report
+  //     .where('userId', isEqualTo: currentUser?.uid)
+  //     // .orderBy('postDate')
+  //     .snapshots();
+
+  //     return reportStream;
+  // }
+
+  // READ: get sort report
+  Stream<QuerySnapshot> getReportOfCurrentUserId({bool descending = true}) {
     // get current user
     final currentUser = FirebaseAuth.instance.currentUser;
-    print("this isssssssssssssss ${currentUser?.uid}");
 
-    final reportStream = report
-      .where('userId', isEqualTo: currentUser?.uid)
-      // .orderBy('postDate')
-      .snapshots();
-
-      return reportStream;
+    return report
+        .where('userId', isEqualTo: currentUser?.uid)
+        .orderBy('postDate', descending: descending)
+        .snapshots();
   }
 
   // UPDATE: update status to "In progress"

@@ -66,11 +66,14 @@ class AllReportsScreen extends StatelessWidget {
                         '${reportList.length} Reports',
                         style: const TextStyle(fontSize: 16),
                       ),
+                      // Filter and Sorting
                       Row(
                         children: const [
                           Text('Category', style: TextStyle(fontSize: 16)),
                           SizedBox(width: 12),
                           Text('Sort by', style: TextStyle(fontSize: 16)),
+                          SizedBox(width: 12),
+                          Text('Status', style: TextStyle(fontSize: 16)),
                         ],
                       ),
                     ],
