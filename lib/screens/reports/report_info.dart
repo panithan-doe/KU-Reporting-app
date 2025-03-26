@@ -6,6 +6,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:ku_report_app/services/notification_service.dart';
 import 'package:ku_report_app/services/report_service.dart';
 import 'package:ku_report_app/widgets/go_back_appbar.dart';
 
@@ -72,6 +73,7 @@ class ReportInfo extends StatelessWidget {
               final status = data['status'] as String;
               final location = data['location'] as String;
               final description = data['description'] as String;
+              final userId = data['userId'] as String;
 
               return Padding(
                 padding: const EdgeInsets.all(20.0),
@@ -101,7 +103,7 @@ class ReportInfo extends StatelessWidget {
 
                     // If the current user is a "Technician":
                     if (userRole == 'Technician') ...[
-                      ChangeStatusButton(docId: docId, status: status),
+                      ChangeStatusButton(docId: docId, reportTitle: title, status: status, userId: userId),
                     ],
                   ],
                 ),
@@ -379,24 +381,32 @@ class BottomStatusContainer extends StatelessWidget {
 
 class ChangeStatusButton extends StatelessWidget {
   final String docId;
+  final String reportTitle;
   final String status;
+  final String userId;
 
-  ChangeStatusButton({super.key, required this.docId, required this.status});
+  ChangeStatusButton({super.key, required this.docId, required this.reportTitle, required this.status, required this.userId});
 
   final ReportService _reportService = ReportService();
+  final NotificationService _notificationService = NotificationService();
 
   @override
   Widget build(BuildContext context) {
     late Color backgroundButtonColor;
+    late String updatedStatus;
 
     switch (status) {
       case 'Pending':
         backgroundButtonColor = Colors.orange;
+        updatedStatus = 'In progress';
         return Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             InkWell(
-              onTap: () => _reportService.updateStatus(docId, 'In progress'),
+              onTap: () {
+                _reportService.updateStatus(docId, updatedStatus);
+                _notificationService.addNotification(reportTitle, updatedStatus, userId, docId);
+              },
               child: Container(
                 padding: EdgeInsets.symmetric(horizontal: 8),
                 height: 56,
@@ -425,7 +435,10 @@ class ChangeStatusButton extends StatelessWidget {
             ),
             SizedBox(height: 8),
             InkWell(
-              onTap: () => _reportService.updateStatus(docId, 'Canceled'),
+              onTap: () {
+                _reportService.updateStatus(docId, 'Canceled');
+                _notificationService.addNotification(reportTitle, 'Canceled', userId, docId);
+              },
               child: Container(
                 padding: EdgeInsets.symmetric(horizontal: 8),
                 height: 56,
@@ -457,11 +470,15 @@ class ChangeStatusButton extends StatelessWidget {
 
       case 'In progress':
         backgroundButtonColor = Colors.green;
+        updatedStatus = 'Completed';
         return Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             InkWell(
-              onTap: () => _reportService.updateStatus(docId, 'Completed'),
+              onTap: () {
+                _reportService.updateStatus(docId, updatedStatus);
+                _notificationService.addNotification(reportTitle, updatedStatus, userId, docId);
+              },
               child: Container(
                 padding: EdgeInsets.symmetric(horizontal: 8),
                 height: 56,
@@ -490,7 +507,10 @@ class ChangeStatusButton extends StatelessWidget {
             ),
             SizedBox(height: 8),
             InkWell(
-              onTap: () => _reportService.updateStatus(docId, 'Canceled'),
+              onTap: () {
+                _reportService.updateStatus(docId, 'Canceled');
+                _notificationService.addNotification(reportTitle, 'Canceled', userId, docId);
+              },
               child: Container(
                 padding: EdgeInsets.symmetric(horizontal: 8),
                 height: 56,
@@ -588,6 +608,7 @@ class ChangeStatusButton extends StatelessWidget {
             ),
             SizedBox(height: 8),
             InkWell(
+              // change 'Canceled' to 'In progress' should not create 'checked notification'
               onTap: () => _reportService.updateStatus(docId, 'In progress'),
               child: Container(
                 padding: EdgeInsets.symmetric(horizontal: 8),

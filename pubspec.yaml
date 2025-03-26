@@ -80,6 +80,10 @@ flutter:
     - assets/icons/KU_sublogo.png
     - assets/icons/KU_sublogo_large.png
     - assets/icons/google-logo.png
+    - assets/icons/completed.png
+    - assets/icons/canceled.png
+    - assets/icons/checked.png
+
 
 
   # An image asset can refer to one or more resolution-specific "variants", see

@@ -25,68 +25,52 @@ class _MyReportsPageState extends State<MyReportsPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF2F5F7),
       appBar: GoBackAppBar(titleText: 'My reports'),
-      body: Container(
-        color: const Color(0xFFF2F5F7),
-        child: StreamBuilder<QuerySnapshot>(
+      body: StreamBuilder<QuerySnapshot>(
           // Use a helper method to get the correct stream based on _sortOption
           stream: _getSortedReportStream(),
           builder: (context, snapshot) {
-            if (!snapshot.hasData) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            final reportList = snapshot.data!.docs;
+            if (snapshot.hasData) {
+              final reportList = snapshot.data!.docs;
 
-            return Column(
-              children: [
-                // We pass a callback so that the FilterBar can trigger the modal
-                FilterBar(
-                  onSortTap: () => _showSortBottomSheet(context),
-                  currentSort: _sortOption,
-                  reportsLength: reportList.length,
-                ),
-                // Padding(
-                //   padding: const EdgeInsets.symmetric(
-                //     vertical: 12,
-                //     horizontal: 16,
-                //   ),
-                //   child: Row(
-                //     mainAxisAlignment: MainAxisAlignment.start,
-                //     crossAxisAlignment: CrossAxisAlignment.center,
-                //     children: [
-                //       Text(
-                //         '${reportList.length} Reports',
-                //         style: const TextStyle(fontSize: 16),
-                //       ),
-                //     ],
-                //   ),
-                // ),
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: reportList.length,
-                    itemBuilder: (context, index) {
-                      DocumentSnapshot document = reportList[index];
-                      Map<String, dynamic> data =
-                          document.data() as Map<String, dynamic>;
-
-                      String docId = document.id;
-
-                      return ListTileReport(
-                        docId: docId,
-                        image: data['image'],
-                        title: data['title'],
-                        location: data['location'],
-                        status: data['status'],
-                        postDate: data['postDate'],
-                        category: data['category'],
-                      );
-                    },
+              return Column(
+                children: [
+                  // We pass a callback so that the FilterBar can trigger the modal
+                  FilterBar(
+                    onSortTap: () => _showSortBottomSheet(context),
+                    currentSort: _sortOption,
+                    reportsLength: reportList.length,
                   ),
-                ),
-              ],
-            );
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: reportList.length,
+                      itemBuilder: (context, index) {
+                        DocumentSnapshot document = reportList[index];
+                        Map<String, dynamic> data =
+                            document.data() as Map<String, dynamic>;
+
+                        String docId = document.id;
+
+                        return ListTileReport(
+                          docId: docId,
+                          image: data['image'],
+                          title: data['title'],
+                          location: data['location'],
+                          status: data['status'],
+                          postDate: data['postDate'],
+                          category: data['category'],
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              );
+              
+            } else {
+              return const Center(child: Text('No reports'),);
+            }
           },
         ),
-      ),
+      
     );
   }
 

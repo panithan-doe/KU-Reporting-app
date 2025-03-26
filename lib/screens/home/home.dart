@@ -4,8 +4,8 @@ import 'package:ku_report_app/screens/dashboard/dashboard.dart';
 import 'package:ku_report_app/screens/reports/all_reports.dart';
 import 'package:ku_report_app/screens/reports/my_reports.dart';
 import 'package:ku_report_app/screens/user/notification.dart';
+import 'package:ku_report_app/services/notification_service.dart';
 import 'package:ku_report_app/services/report_service.dart';
-import 'package:ku_report_app/widgets/listtile_report.dart';
 import 'package:ku_report_app/widgets/listtile_report_home.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -15,7 +15,7 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF2F5F7),
-      appBar: const CustomAppBar(),
+      appBar: CustomAppBar(),
       body: Padding(
         padding: EdgeInsets.all(16.0),
         child: Column(
@@ -34,7 +34,9 @@ class HomeScreen extends StatelessWidget {
 }
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const CustomAppBar({super.key});
+  CustomAppBar({super.key});
+
+  final NotificationService notificationService = NotificationService();
 
   @override
   Widget build(BuildContext context) {
@@ -52,17 +54,46 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                 height: 52,
                 fit: BoxFit.contain,
               ),
-              IconButton(
-  icon: const Icon(Icons.notifications_none, size: 28),
-  onPressed: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const NotificationScreen(), // ✅ ไปยังหน้า Notification
-      ),
-    );
-  },
-),
+
+              StreamBuilder<QuerySnapshot>(
+                stream: notificationService.getUnreadNotificationsStream(), 
+                builder: (context, snapshot) {
+                  bool hasUnread = snapshot.hasData && 
+                      (snapshot.data?.docs.isNotEmpty ?? false);
+
+                  return IconButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => NotificationScreen(), // ✅ ไปยังหน้า Notification
+                        ),
+                      );
+                    },
+                    icon: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        const Icon(Icons.notifications_none, size: 28),
+                        if (hasUnread) 
+                          Positioned(
+                              right: 0,
+                              top: -1,
+                              child: Container(
+                                width: 10,
+                                height: 10,
+                                decoration: BoxDecoration(
+                                  color: Colors.red,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                          )
+                      ],
+                    )
+                  );
+                }
+              ),
+
+              
             ],
           ),
         ),
@@ -197,33 +228,33 @@ class ReportsSection extends StatelessWidget {
           child: StreamBuilder<QuerySnapshot>(
             stream: reportService.getReportOfCurrentUserId(),
             builder: (context, snapshot) {
-              if (!snapshot.hasData) {
-                return const Center(child: CircularProgressIndicator());
+              if (snapshot.hasData) {
+                final reportList = snapshot.data!.docs;
+                
+                return ListView.builder(
+                    itemCount: reportList.length,
+                    itemBuilder: (context, index) {
+                      DocumentSnapshot document = reportList[index];
+                      Map<String, dynamic> data =
+                          document.data() as Map<String, dynamic>;
+
+                      String docId = document.id;
+
+                      return ListTileReportHome(
+                        docId: docId,
+                        image: data['image'],
+                        title: data['title'],
+                        location: data['location'],
+                        status: data['status'],
+                        postDate: data['postDate'],
+                        category: data['category'],
+                      );
+                    },
+                );
+              } else {
+                return const Center(child: Text('No notifications yet'),);
               }
-              final reportList = snapshot.data!.docs;
 
-              return Expanded(
-                child: ListView.builder(
-                  itemCount: reportList.length,
-                  itemBuilder: (context, index) {
-                    DocumentSnapshot document = reportList[index];
-                    Map<String, dynamic> data =
-                        document.data() as Map<String, dynamic>;
-
-                    String docId = document.id;
-
-                    return ListTileReportHome(
-                      docId: docId,
-                      image: data['image'],
-                      title: data['title'],
-                      location: data['location'],
-                      status: data['status'],
-                      postDate: data['postDate'],
-                      category: data['category'],
-                    );
-                  },
-                ),
-              );
             },
           ),
         ),
