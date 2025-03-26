@@ -6,6 +6,7 @@ import 'package:ku_report_app/screens/reports/my_reports.dart';
 import 'package:ku_report_app/screens/user/notification.dart';
 import 'package:ku_report_app/services/report_service.dart';
 import 'package:ku_report_app/widgets/listtile_report.dart';
+import 'package:ku_report_app/widgets/listtile_report_home.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -211,7 +212,7 @@ class ReportsSection extends StatelessWidget {
 
                     String docId = document.id;
 
-                    return ListTileReport(
+                    return ListTileReportHome(
                       docId: docId,
                       image: data['image'],
                       title: data['title'],
