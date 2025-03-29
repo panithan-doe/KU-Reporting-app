@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:ku_report_app/screens/user/enter_username.dart';
 import 'package:ku_report_app/theme/color.dart';
 
 class SignUpPage extends StatefulWidget {
@@ -22,7 +23,59 @@ class _SignUpPageState extends State<SignUpPage> {
   String? _errorMessage;
 
   // Create a new account using Firebase Auth
-  Future<void> _createAccount() async {
+  // Future<void> _createAccount() async {
+  //   if (!_formKey.currentState!.validate()) return;
+
+  //   // Ensure passwords match
+  //   if (_passwordController.text != _confirmPasswordController.text) {
+  //     setState(() {
+  //       _errorMessage = 'Passwords do not match.';
+  //     });
+  //     return;
+  //   }
+
+  //   setState(() {
+  //     _isLoading = true;
+  //     _errorMessage = null;
+  //   });
+
+  //   try {
+  //     UserCredential userCred = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+  //       email: _emailController.text.trim(),
+  //       password: _passwordController.text,
+  //     );
+
+  //     final uid = userCred.user!.uid;
+
+  //     await FirebaseFirestore.instance.collection('users').doc(uid).set({
+  //       'email': _emailController.text.trim(),
+  //       'role': 'User', // or "Technician" or "Admin" depending on your logic
+  //       'name': '',
+  //       'phoneNumber': '',
+  //       // you can store other fields here too, like displayName, phone, etc.
+  //     });
+
+  //     if (mounted) {
+  //       Navigator.pushReplacementNamed(context, '/home');
+  //     }
+  //   } on FirebaseAuthException catch (e) {
+  //     setState(() {
+  //       _errorMessage = _getFirebaseErrorMessage(e.code);
+  //     });
+  //   } catch (e) {
+  //     setState(() {
+  //       _errorMessage = 'An unexpected error occurred';
+  //     });
+  //   } finally {
+  //     if (mounted) {
+  //       setState(() {
+  //         _isLoading = false;
+  //       });
+  //     }
+  //   }
+  // }
+
+  void _navigateToUsernamePage() {
     if (!_formKey.currentState!.validate()) return;
 
     // Ensure passwords match
@@ -34,45 +87,22 @@ class _SignUpPageState extends State<SignUpPage> {
     }
 
     setState(() {
-      _isLoading = true;
       _errorMessage = null;
     });
 
-    try {
-      UserCredential userCred = await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text,
-      );
+    Navigator.push(
+      context, 
+      MaterialPageRoute(
+        builder: (_) => EnterUsernamePage(
+          email: _emailController.text.trim(),
+          password: _passwordController.text.trim(),
+          isGoogleSignIn: false,  // not sign in with google
+        ) 
+      
+      )
+    );
+  } 
 
-      final uid = userCred.user!.uid;
-
-      await FirebaseFirestore.instance.collection('users').doc(uid).set({
-        'email': _emailController.text.trim(),
-        'role': 'User', // or "Technician" or "Admin" depending on your logic
-        'name': '',
-        'phoneNumber': '',
-        // you can store other fields here too, like displayName, phone, etc.
-      });
-
-      if (mounted) {
-        Navigator.pushReplacementNamed(context, '/home');
-      }
-    } on FirebaseAuthException catch (e) {
-      setState(() {
-        _errorMessage = _getFirebaseErrorMessage(e.code);
-      });
-    } catch (e) {
-      setState(() {
-        _errorMessage = 'An unexpected error occurred';
-      });
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    }
-  }
 
   // Map Firebase error codes to user-friendly messages
   String _getFirebaseErrorMessage(String code) {
@@ -284,7 +314,7 @@ class _SignUpPageState extends State<SignUpPage> {
                       ],
                       const SizedBox(height: 20),
                       ElevatedButton(
-                        onPressed: _isLoading ? null : _createAccount,
+                        onPressed: _isLoading ? null : _navigateToUsernamePage,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: customGreenPrimary,
                           foregroundColor: Colors.white,

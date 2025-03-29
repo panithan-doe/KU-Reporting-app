@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart' hide OAuthProvider;
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:ku_report_app/bottom_nav.dart';
+import 'package:ku_report_app/screens/user/enter_username.dart';
 import 'package:ku_report_app/theme/color.dart';
 
 class SignInPage extends StatefulWidget {
@@ -89,12 +90,22 @@ class _SignInPageState extends State<SignInPage> {
     });
 
     try {
-      // This implementation uses firebase_ui_oauth_google under the hood
-      final googleUser =
-          await GoogleSignIn(
-            clientId:
-                "128318604608-otmejpdaqqqcq99g3u5rcsndg9i8d8i4.apps.googleusercontent.com",
-          ).signIn();
+      final googleSignIn = GoogleSignIn(
+        clientId: "128318604608-otmejpdaqqqcq99g3u5rcsndg9i8d8i4.apps.googleusercontent.com",
+      );
+
+      // 1) Force sign out first so user can pick a new account
+      await googleSignIn.signOut();
+
+      // 2) Now do a fresh sign in
+      final googleUser = await googleSignIn.signIn();
+      if (googleUser == null) {
+        // User canceled
+        setState(() => _isLoading = false);
+        return;
+      }
+
+
 
       // User canceled the sign-in
       if (googleUser == null) {
@@ -122,19 +133,24 @@ class _SignInPageState extends State<SignInPage> {
         final docSnap = await docRef.get();
 
         // 3. If it doesn't exist, create user
-        if (!docSnap.exists) {
-          await docRef.set({
-            'email': user.email,
-            'role': 'User',
-            'phoneNumber': '',
-            'name': '',
-          });
+        if (!docSnap.exists || !(docSnap.data()?['username']?.isNotEmpty ?? false)) {
+        // Navigate to username page
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (_) => EnterUsernamePage(
+                isGoogleSignIn: true,
+              ),
+            ),
+          );
         }
-
-        // 4. Navigate to home
+      } else {
+        // doc exists and has a username
         if (mounted) {
           Navigator.pushReplacementNamed(context, '/home');
         }
+      }
       }
     } catch (e) {
       setState(() {

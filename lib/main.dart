@@ -63,12 +63,15 @@ class AuthWrapper extends StatelessWidget {
             );
           }
           if (!snapshot.hasData || !snapshot.data!.exists) {
-            return const Scaffold(
-              body: Center(
-                child: Text('No user record found.'),
-              ),
-            );
-          }
+  // For example, sign out then show a simple screen:
+  FirebaseAuth.instance.signOut();
+
+  return Scaffold(
+    body: Center(
+      child: Text('No user record found. Please sign up.'),
+    ),
+  );
+}
 
           final role = snapshot.data!['role'] as String? ?? 'User';
           return BottomNavBar(role: role);
