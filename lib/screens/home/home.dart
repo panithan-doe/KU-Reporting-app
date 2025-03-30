@@ -282,48 +282,60 @@ class ReportsSection extends StatelessWidget {
           child: StreamBuilder<QuerySnapshot>(
             stream: reportService.getReportOfCurrentUserId(),
             builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                final reportList = snapshot.data!.docs;
-                
-                return ListView.builder(
-                    itemCount: reportList.length,
-                    itemBuilder: (context, index) {
-                      DocumentSnapshot document = reportList[index];
-                      Map<String, dynamic> data =
-                          document.data() as Map<String, dynamic>;
 
-                      String docId = document.id;
-
-                      // 1. Safely read the images array
-                      final List<dynamic>? imagesList = data['images'] as List<dynamic>?;
-                      
-                      // 2. Grab the first item if present
-                      String firstBase64 = '';
-                      if (imagesList != null && imagesList.isNotEmpty) {
-                          firstBase64 = imagesList[0] as String;  // get first image in list
-                      }
-                      
-                      final Timestamp? postDateTimestamp = data['postDate'] as Timestamp?;
-                      final postDateString = postDateTimestamp != null
-                        ? DateFormat('dd-MM--yyy').format(postDateTimestamp.toDate())
-                        : '';
-
-
-                      return ListTileReport(
-                        docId: docId,
-                        images: firstBase64,
-                        title: data['title'],
-                        location: data['location'],
-                        status: data['status'],
-                        postDate: postDateString,
-                        category: data['category'],
-                      );
-                    },
+              if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Image.asset('assets/images/empty-box.png', width: 120,),
+                      SizedBox(height: 8,),
+                      Text('No reports yet', style: TextStyle(fontSize: 24),),
+                      SizedBox(height: 4,),
+                      Text('Send your report and it show here.')
+                    ],
+                  )
                 );
-              } else {
-                return const Center(child: Text('No notifications yet'),);
               }
 
+              
+              final reportList = snapshot.data!.docs;
+              
+              return ListView.builder(
+                  itemCount: reportList.length,
+                  itemBuilder: (context, index) {
+                    DocumentSnapshot document = reportList[index];
+                    Map<String, dynamic> data =
+                        document.data() as Map<String, dynamic>;
+
+                    String docId = document.id;
+
+                    // 1. Safely read the images array
+                    final List<dynamic>? imagesList = data['images'] as List<dynamic>?;
+                    
+                    // 2. Grab the first item if present
+                    String firstBase64 = '';
+                    if (imagesList != null && imagesList.isNotEmpty) {
+                        firstBase64 = imagesList[0] as String;  // get first image in list
+                    }
+                    
+                    final Timestamp? postDateTimestamp = data['postDate'] as Timestamp?;
+                    final postDateString = postDateTimestamp != null
+                      ? DateFormat('dd-MM--yyy').format(postDateTimestamp.toDate())
+                      : '';
+
+
+                    return ListTileReport(
+                      docId: docId,
+                      images: firstBase64,
+                      title: data['title'],
+                      location: data['location'],
+                      status: data['status'],
+                      postDate: postDateString,
+                      category: data['category'],
+                    );
+                  },
+              );
             },
           ),
         ),

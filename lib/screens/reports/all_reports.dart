@@ -67,6 +67,22 @@ class _AllReportsScreenState extends State<AllReportsScreen> {
       body: StreamBuilder<QuerySnapshot>(
         stream: _getSortedReportStream(),
         builder: (context, snapshot) {
+
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset('assets/images/empty-box.png', width: 120,),
+                  SizedBox(height: 8,),
+                  Text('No reports yet', style: TextStyle(fontSize: 24),),
+                  SizedBox(height: 4,),
+                  Text('Send your report and it show here.')
+                ],
+              )
+            );
+          }
+
           if (snapshot.hasData) {
             final reportList = snapshot.data!.docs;
 
