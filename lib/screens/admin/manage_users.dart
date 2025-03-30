@@ -44,7 +44,8 @@ class ManageUsersScreen extends StatelessWidget {
 
                       return ListTileUser(
                         docId: docId,
-                        image: data['profileImage'],
+                        image: data['profileImageBase64'],
+                        username: data['username'],
                         name: data['name'],
                         role: data['role'],
                       );

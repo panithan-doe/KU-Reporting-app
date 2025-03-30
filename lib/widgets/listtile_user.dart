@@ -6,12 +6,14 @@ class ListTileUser extends StatelessWidget {
     super.key,
     required this.docId,
     required this.image,
+    required this.username,
     required this.name,
     required this.role,
   });
 
   final String docId;
   final String? image;
+  final String username;
   final String name;
   final String role;
 
@@ -25,7 +27,7 @@ class ListTileUser extends StatelessWidget {
         // );
       },
       child: Container(
-        height: 72,
+        height: 76,
         decoration: BoxDecoration(
           color: Colors.white,
           border: Border(bottom: BorderSide(color: Colors.grey, width: 0.5)),
@@ -37,10 +39,10 @@ class ListTileUser extends StatelessWidget {
             children: [
               // Leading
               ClipRRect(
-                borderRadius: BorderRadius.circular(4),
+                borderRadius: BorderRadius.circular(50),
                 child: SizedBox(
-                  height: 60,
-                  width: 60,
+                  height: 48,
+                  width: 48,
                   child: _buildImage(),
                 ),
               ),
@@ -53,9 +55,9 @@ class ListTileUser extends StatelessWidget {
                     children: [
                       // Title
                       Text(
-                        name.length > 50
-                            ? '${name.substring(0, 50)}...'
-                            : name,
+                        username.length > 50
+                            ? '${username.substring(0, 50)}...'
+                            : username,
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -78,60 +80,61 @@ class ListTileUser extends StatelessWidget {
   }
 
   Widget _buildImage() {
-    // If no image is provided, show a default person icon
-    if (image == null || image!.isEmpty) {
-      return Container(
-        color: Colors.grey[300],
-        child: Icon(Icons.person, color: Colors.white, size: 40),
-      );
-    }
-
-    try {
-      // Try to decode as base64
-      if (image!.contains('base64')) {
-        return Image.memory(
-          base64Decode(image!.split(',').last),
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) {
-            return Container(
-              color: Colors.grey[300],
-              child: Icon(Icons.person, color: Colors.white, size: 40),
-            );
-          },
-        );
-      }
-      
-      // If it's an asset path
-      if (image!.startsWith('assets/')) {
-        return Image.asset(
-          image!,
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) {
-            return Container(
-              color: Colors.grey[300],
-              child: Icon(Icons.person, color: Colors.white, size: 40),
-            );
-          },
-        );
-      }
-      
-      // If it's a network image
-      return Image.network(
-        image!,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          return Container(
-            color: Colors.grey[300],
-            child: Icon(Icons.person, color: Colors.white, size: 40),
-          );
-        },
-      );
-    } catch (e) {
-      // If any error occurs, show default icon
-      return Container(
-        color: Colors.grey[300],
-        child: Icon(Icons.person, color: Colors.white, size: 40),
-      );
-    }
+  // If no image is provided, show a default person icon
+  if (image == null || image!.isEmpty) {
+    return Container(
+      color: Colors.grey[300],
+      child: const Icon(Icons.person, color: Colors.white, size: 40),
+    );
   }
+
+  // Attempt to decode as Base64
+  try {
+    final decodedBytes = base64Decode(image!);
+    // If decoding succeeds, show the MemoryImage
+    return Image.memory(
+      decodedBytes,
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) {
+        // If the MemoryImage fails for some reason, fallback
+        return Container(
+          color: Colors.grey[300],
+          child: const Icon(Icons.person, color: Colors.white, size: 40),
+        );
+      },
+    );
+  } catch (e) {
+    // Decoding as base64 failed:
+    // - Maybe it's a direct URL to an image
+    // - Or a local asset path like "assets/..."
+    // Let's handle those:
+
+    // // If it starts with "assets/", attempt to load an asset:
+    // if (image!.startsWith('assets/')) {
+    //   return Image.asset(
+    //     image!,
+    //     fit: BoxFit.cover,
+    //     errorBuilder: (context, error, stackTrace) {
+    //       return Container(
+    //         color: Colors.grey[300],
+    //         child: const Icon(Icons.person, color: Colors.white, size: 40),
+    //       );
+    //     },
+    //   );
+    // }
+
+    // Otherwise, assume it's a network URL
+    return Image.network(
+      image!,
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) {
+        return Container(
+          color: Colors.grey[300],
+          child: const Icon(Icons.person, color: Colors.white, size: 40),
+        );
+      },
+    );
+  }
+}
+
 }
