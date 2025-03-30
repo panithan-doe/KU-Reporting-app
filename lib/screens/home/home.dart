@@ -182,6 +182,7 @@ class DashboardSection extends StatelessWidget {
             ),
           ),
         ),
+        SizedBox(width: 8,),
         Expanded(
           child: GestureDetector(
             onTap: () {

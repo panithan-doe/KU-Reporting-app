@@ -53,7 +53,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
             final completedCount = counts['Completed'] ?? 0;
             final canceledCount = counts['Canceled'] ?? 0;
 
-            final total = pendingCount + inProgressCount + completedCount + canceledCount;
+            final total =
+                pendingCount + inProgressCount + completedCount + canceledCount;
 
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -93,7 +94,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           canceled: canceledCount,
                           total: total,
                         ),
-                        const SizedBox(height: 24),
+                        // const SizedBox(height: 8),
 
                         // Pie Chart
                         Expanded(
@@ -150,23 +151,20 @@ class _FilterSectionState extends State<FilterSection> {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
-        children: List.generate(
-          filters.length,
-          (index) {
-            final filter = filters[index];
-            return _buildFilterButton(
-              filter,
-              isActive: index == selectedIndex,
-              onTap: () {
-                setState(() {
-                  selectedIndex = index;
-                });
-                // Invoke the callback, so the parent can update
-                widget.onCategorySelected(filter);
-              },
-            );
-          },
-        ),
+        children: List.generate(filters.length, (index) {
+          final filter = filters[index];
+          return _buildFilterButton(
+            filter,
+            isActive: index == selectedIndex,
+            onTap: () {
+              setState(() {
+                selectedIndex = index;
+              });
+              // Invoke the callback, so the parent can update
+              widget.onCategorySelected(filter);
+            },
+          );
+        }),
       ),
     );
   }
@@ -220,7 +218,7 @@ class SummarySection extends StatelessWidget {
       children: [
         const SizedBox(height: 20),
         Text(
-          'จำนวนปัญหาทั้งหมด    $total รายการ',
+          'จำนวนปัญหาทั้งหมด $total รายการ',
           style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 30),
@@ -240,10 +238,7 @@ class SummarySection extends StatelessWidget {
         children: [
           Text(
             title,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-            ),
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
           ),
           Text(
             '$count รายการ',
