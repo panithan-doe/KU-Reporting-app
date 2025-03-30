@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:ku_report_app/services/user_service.dart';
+
 import 'package:ku_report_app/theme/color.dart';
 import 'package:ku_report_app/widgets/go_back_appbar.dart';
 
@@ -16,7 +16,6 @@ class EditProfileScreen extends StatefulWidget {
 }
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
-  final UserService _userService = UserService();
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   // If the user picks a new image from the gallery, we store it here:
