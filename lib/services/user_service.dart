@@ -40,6 +40,16 @@ class UserService {
     });
   }
 
+  Future<void> toggleUserRole(String docId, String role) async {
+    if (role == 'User') {
+      await user.doc(docId).update({ 'role': 'Technician' });
+    } else if (role == 'Technician') {
+      await user.doc(docId).update({ 'role': 'User' });
+    } else {
+      // do nothing
+    }
+  }
+
   // DELETE: delete user given a doc id
   Future<void> deleteUser(String docID) {
     return user.doc(docID).delete();

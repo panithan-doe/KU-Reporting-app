@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:ku_report_app/screens/admin/user_info.dart';
 
 class ListTileUser extends StatelessWidget {
   const ListTileUser({
@@ -21,10 +22,11 @@ class ListTileUser extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        // Navigator.push(
-        //   context,
-        //   MaterialPageRoute(builder: (context) => UserInfo(docId: docId)),
-        // );
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => UserInfo(userId: docId)),
+        );
+        // print('tabbbbbbbbbbbbbbbbbb');
       },
       child: Container(
         height: 76,
