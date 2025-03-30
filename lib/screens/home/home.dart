@@ -111,7 +111,7 @@ class GreetingSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Text(
-      'Hi there, username 👋',
+      'Welcome, username 👋',
       style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
     );
   }

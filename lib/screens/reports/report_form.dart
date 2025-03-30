@@ -15,9 +15,10 @@ class ReportFormScreen extends StatefulWidget {
 class _ReportFormScreenState extends State<ReportFormScreen> {
   final List<File> _images = [];
   final ImagePicker _picker = ImagePicker();
-  static const int maxImages = 3;
+  static const int maxImages = 5;
 
   String? _selectedCategory;
+  String? _selectedLocation;
   final DateTime _currentDate = DateTime.now();
 
   @override
@@ -82,6 +83,12 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
                 onCategoryChanged: (value) {
                   setState(() {
                     _selectedCategory = value;
+                  });
+                },
+                selectedLocation: _selectedLocation,
+                onLocationChanged: (value) {
+                  setState(() {
+                    _selectedLocation = value;
                   });
                 },
                 currentDate: _currentDate,
@@ -194,7 +201,7 @@ class ReportImagePicker extends StatelessWidget {
           const Padding(
             padding: EdgeInsets.only(top: 8),
             child: Text(
-              "You can upload up to 3 photos.",
+              "You can upload up to 5 photos.",
               style: TextStyle(color: Colors.red),
             ),
           ),
@@ -205,13 +212,17 @@ class ReportImagePicker extends StatelessWidget {
 
 class ReportFormFields extends StatelessWidget {
   final String? selectedCategory;
+  final String? selectedLocation;
   final void Function(String?) onCategoryChanged;
+  final void Function(String?) onLocationChanged;
   final DateTime currentDate;
 
   const ReportFormFields({
     super.key,
     required this.selectedCategory,
     required this.onCategoryChanged,
+    required this.selectedLocation,
+    required this.onLocationChanged,
     required this.currentDate,
   });
 
@@ -225,6 +236,7 @@ class ReportFormFields extends StatelessWidget {
           value: selectedCategory,
           onChanged: onCategoryChanged,
           decoration: InputDecoration(
+            prefixIcon: const Icon(Icons.dashboard),
             hintText: "Category",
             filled: true,
             fillColor: Colors.grey[100],
@@ -246,30 +258,360 @@ class ReportFormFields extends StatelessWidget {
               ),
             ),
             DropdownMenuItem(
-              value: "ถนน",
+              value: "ประปา",
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: 12),
-                child: Text("ถนน", style: TextStyle(fontSize: 18)),
+                child: Text("ประปา", style: TextStyle(fontSize: 18)),
               ),
             ),
             DropdownMenuItem(
-              value: "อุปกรณ์",
+              value: "อุปกรณ์ไฟฟ้า",
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: 12),
-                child: Text("อุปกรณ์", style: TextStyle(fontSize: 18)),
+                child: Text("อุปกรณ์ไฟฟ้า", style: TextStyle(fontSize: 18)),
               ),
             ),
             DropdownMenuItem(
-              value: "อื่นๆ",
+              value: "โครงสร้างและอาคาร",
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: 12),
-                child: Text("อื่นๆ", style: TextStyle(fontSize: 18)),
+                child: Text("โครงสร้างและอาคาร", style: TextStyle(fontSize: 18)),
+              ),
+            ),
+            DropdownMenuItem(
+              value: "ไอที",
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 12),
+                child: Text("ไอที", style: TextStyle(fontSize: 18)),
+              ),
+            ),
+            DropdownMenuItem(
+              value: "ระบบความปลอดภัย",
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 12),
+                child: Text("ระบบความปลอดภัย", style: TextStyle(fontSize: 18)),
+              ),
+            ),
+            DropdownMenuItem(
+              value: "เฟอร์นิเจอร์",
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 12),
+                child: Text("เฟอร์นิเจอร์", style: TextStyle(fontSize: 18)),
+              ),
+            ),
+            DropdownMenuItem(
+              value: "พื้นที่ภายนอกอาคาร",
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 12),
+                child: Text("พื้นที่ภายนอกอาคาร", style: TextStyle(fontSize: 18)),
               ),
             ),
           ],
         ),
         const SizedBox(height: 16),
-        _buildLocationPicker(context),
+        DropdownButtonFormField<String>(
+  value: selectedLocation,
+  onChanged: onLocationChanged,
+  decoration: InputDecoration(
+    prefixIcon: const Icon(Icons.location_on),
+    hintText: "Location",
+    filled: true,
+    fillColor: Colors.grey[100],
+    border: OutlineInputBorder(
+      borderSide: BorderSide.none,
+      borderRadius: BorderRadius.circular(8),
+    ),
+    contentPadding: const EdgeInsets.symmetric(
+      horizontal: 16,
+      vertical: 14,
+    ),
+  ),
+  menuMaxHeight: 395, // 👈 จำกัดความสูงของ dropdown
+  items: const [
+    DropdownMenuItem(
+      value: "คณะเกษตร",
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 12),
+        child: Text("คณะเกษตร", style: TextStyle(fontSize: 18)),
+      ),
+    ),
+    DropdownMenuItem(
+      value: "คณะบริหารธุรกิจ",
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 12),
+        child: Text("คณะบริหารธุรกิจ", style: TextStyle(fontSize: 18)),
+      ),
+    ),
+    DropdownMenuItem(
+      value: "คณะประมง",
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 12),
+        child: Text("คณะประมง", style: TextStyle(fontSize: 18)),
+      ),
+    ),
+    DropdownMenuItem(
+      value: "คณะมนุษยศาสตร์",
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 12),
+        child: Text("คณะมนุษยศาสตร์", style: TextStyle(fontSize: 18)),
+      ),
+    ),
+    DropdownMenuItem(
+      value: "คณะเศรษฐศาสตร์",
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 12),
+        child: Text("คณะเศรษฐศาสตร์", style: TextStyle(fontSize: 18)),
+      ),
+    ),
+    DropdownMenuItem(
+      value: "คณะวิทยาศาสตร์",
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 12),
+        child: Text("คณะวิทยาศาสตร์", style: TextStyle(fontSize: 18)),
+      ),
+    ),
+    DropdownMenuItem(
+      value: "คณะวิศวกรรมศาสตร์",
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 12),
+        child: Text("คณะวิศวกรรมศาสตร์", style: TextStyle(fontSize: 18)),
+      ),
+    ),
+    DropdownMenuItem(
+      value: "คณะวนศาสตร์",
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 12),
+        child: Text("คณะวนศาสตร์", style: TextStyle(fontSize: 18)),
+      ),
+    ),
+    DropdownMenuItem(
+      value: "คณะเศรษฐศาสตร์",
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 12),
+        child: Text("คณะเศรษฐศาสตร์", style: TextStyle(fontSize: 18)),
+      ),
+    ),
+    DropdownMenuItem(
+      value: "คณะศึกษาศาสตร์",
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 12),
+        child: Text("คณะศึกษาศาสตร์", style: TextStyle(fontSize: 18)),
+      ),
+    ),
+    DropdownMenuItem(
+      value: "คณะสังคมศาสตร์",
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 12),
+        child: Text("คณะสังคมศาสตร์", style: TextStyle(fontSize: 18)),
+      ),
+    ),
+    DropdownMenuItem(
+      value: "คณะสัตวแพทยศาสตร์",
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 12),
+        child: Text("คณะสัตวแพทยศาสตร์", style: TextStyle(fontSize: 18)),
+      ),
+    ),
+    DropdownMenuItem(
+      value: "คณะสิ่งแวดล้อม",
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 12),
+        child: Text("คณะสิ่งแวดล้อม", style: TextStyle(fontSize: 18)),
+      ),
+    ),
+    DropdownMenuItem(
+      value: "คณะสถาปัตยกรรมศาสตร์",
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 12),
+        child: Text("คณะสถาปัตยกรรมศาสตร์", style: TextStyle(fontSize: 18)),
+      ),
+    ),
+    DropdownMenuItem(
+      value: "บัณฑิตวิทยาลัย",
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 12),
+        child: Text("บัณฑิตวิทยาลัย", style: TextStyle(fontSize: 18)),
+      ),
+    ),
+    DropdownMenuItem(
+      value: "โครงสร้างและอาคาร",
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 12),
+        child: Text("โครงสร้างและอาคาร", style: TextStyle(fontSize: 18)),
+      ),
+    ),
+    DropdownMenuItem(
+      value: "วิทยาลัยสิ่งแวดล้อม",
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 12),
+        child: Text("วิทยาลัยสิ่งแวดล้อม", style: TextStyle(fontSize: 18)),
+      ),
+    ),
+    DropdownMenuItem(
+      value: "วิทยาลัยเทคนิคการสัตวแพทย์",
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 12),
+        child: Text("วิทยาลัยเทคนิคการสัตวแพทย์", style: TextStyle(fontSize: 18)),
+      ),
+    ),
+    DropdownMenuItem(
+      value: "อาคารศูนย์เรียนรวม 1",
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 12),
+        child: Text("อาคารศูนย์เรียนรวม 1", style: TextStyle(fontSize: 18)),
+      ),
+    ),
+    DropdownMenuItem(
+      value: "อาคารศูนย์เรียนรวม 2",
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 12),
+        child: Text("อาคารศูนย์เรียนรวม 2", style: TextStyle(fontSize: 18)),
+      ),
+    ),
+    DropdownMenuItem(
+      value: "อาคารศูนย์เรียนรวม 3",
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 12),
+        child: Text("อาคารศูนย์เรียนรวม 3", style: TextStyle(fontSize: 18)),
+      ),
+    ),
+    DropdownMenuItem(
+      value: "อาคารศูนย์เรียนรวม 4",
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 12),
+        child: Text("อาคารศูนย์เรียนรวม 4", style: TextStyle(fontSize: 18)),
+      ),
+    ),
+    DropdownMenuItem(
+      value: "หอประชุมใหญ่",
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 12),
+        child: Text("หอประชุมใหญ่", style: TextStyle(fontSize: 18)),
+      ),
+    ),
+    DropdownMenuItem(
+      value: "หอสมุด มก.",
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 12),
+        child: Text("หอสมุด มก.", style: TextStyle(fontSize: 18)),
+      ),
+    ),
+    DropdownMenuItem(
+      value: "สำนักบริการคอมพิวเตอร์",
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 12),
+        child: Text("สำนักบริการคอมพิวเตอร์", style: TextStyle(fontSize: 18)),
+      ),
+    ),
+    DropdownMenuItem(
+      value: "ศูนย์หนังสือ มก.",
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 12),
+        child: Text("ศูนย์หนังสือ มก.", style: TextStyle(fontSize: 18)),
+      ),
+    ),
+    DropdownMenuItem(
+      value: "อาคารสารนิเทศ 50 ปี",
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 12),
+        child: Text("อาคารสารนิเทศ 50 ปี", style: TextStyle(fontSize: 18)),
+      ),
+    ),
+    DropdownMenuItem(
+      value: "อาคารจักรพันธ์เพ็ญศิริ",
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 12),
+        child: Text("อาคารจักรพันธ์เพ็ญศิริ", style: TextStyle(fontSize: 18)),
+      ),
+    ),
+    DropdownMenuItem(
+      value: "อาคารเทพศาสตร์สถิตย์",
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 12),
+        child: Text("อาคารเทพศาสตร์สถิตย์", style: TextStyle(fontSize: 18)),
+      ),
+    ),
+    DropdownMenuItem(
+      value: "อาคาร KU Home",
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 12),
+        child: Text("อาคาร KU Home", style: TextStyle(fontSize: 18)),
+      ),
+    ),
+    DropdownMenuItem(
+      value: "โรงอาหารกลาง 1",
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 12),
+        child: Text("โรงอาหารกลาง 1", style: TextStyle(fontSize: 18)),
+      ),
+    ),
+    DropdownMenuItem(
+      value: "โรงอาหารกลาง 2",
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 12),
+        child: Text("โรงอาหารกลาง 2", style: TextStyle(fontSize: 18)),
+      ),
+    ),
+    DropdownMenuItem(
+      value: "สนามอินทรีจันทรสถิตย์",
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 12),
+        child: Text("สนามอินทรีจันทรสถิตย์", style: TextStyle(fontSize: 18)),
+      ),
+    ),
+    DropdownMenuItem(
+      value: "สำนักการกีฬา",
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 12),
+        child: Text("สำนักการกีฬา", style: TextStyle(fontSize: 18)),
+      ),
+    ),
+    DropdownMenuItem(
+      value: "สหกรณ์ร้านค้า มก.",
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 12),
+        child: Text("สหกรณ์ร้านค้า มก.", style: TextStyle(fontSize: 18)),
+      ),
+    ),
+    DropdownMenuItem(
+      value: "สหกรณ์ออมทรัพย์ มก",
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 12),
+        child: Text("สหกรณ์ออมทรัพย์ มก", style: TextStyle(fontSize: 18)),
+      ),
+    ),
+    DropdownMenuItem(
+      value: "สถานพยาบาล มก.",
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 12),
+        child: Text("สถานพยาบาล มก.", style: TextStyle(fontSize: 18)),
+      ),
+    ),
+    DropdownMenuItem(
+      value: "ศูนย์วิจัยและควบคุมศัตรูพืชฯ",
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 12),
+        child: Text("ศูนย์วิจัยและควบคุมศัตรูพืชฯ", style: TextStyle(fontSize: 18)),
+      ),
+    ),
+    DropdownMenuItem(
+      value: "อาคาร KU-Green",
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 12),
+        child: Text("อาคาร KU-Green", style: TextStyle(fontSize: 18)),
+      ),
+    ),
+    DropdownMenuItem(
+      value: "ศูนย์การศึกษานานาชาติ",
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 12),
+        child: Text("ศูนย์การศึกษานานาชาติ", style: TextStyle(fontSize: 18)),
+      ),
+    ),
+    
+  ],
+),
+
         const SizedBox(height: 16),
         _buildDateDisplay(currentDate),
         const SizedBox(height: 16),
@@ -309,21 +651,6 @@ class ReportFormFields extends StatelessWidget {
           horizontal: 16,
           vertical: 14,
         ),
-      ),
-    );
-  }
-
-  Widget _buildLocationPicker(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.grey[100],
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: ListTile(
-        leading: const Icon(Icons.location_on),
-        title: const Text("Add location"),
-        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-        onTap: () {},
       ),
     );
   }
