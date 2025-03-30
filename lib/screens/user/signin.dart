@@ -92,6 +92,11 @@ class _SignInPageState extends State<SignInPage> {
     try {
       final googleSignIn = GoogleSignIn(
         clientId: "128318604608-otmejpdaqqqcq99g3u5rcsndg9i8d8i4.apps.googleusercontent.com",
+        // scope for google drive
+        scopes: <String>[
+          'email',
+          'https://www.googleapis.com/auth/drive.file'
+        ]
       );
 
       // 1) Force sign out first so user can pick a new account
@@ -99,14 +104,6 @@ class _SignInPageState extends State<SignInPage> {
 
       // 2) Now do a fresh sign in
       final googleUser = await googleSignIn.signIn();
-      if (googleUser == null) {
-        // User canceled
-        setState(() => _isLoading = false);
-        return;
-      }
-
-
-
       // User canceled the sign-in
       if (googleUser == null) {
         setState(() {

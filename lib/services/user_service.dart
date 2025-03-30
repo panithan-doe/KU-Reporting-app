@@ -15,12 +15,19 @@ class UserService {
       'profileImage': ''
     });
   }
-  
+
   // READ: get user from database
   Stream<QuerySnapshot> getUserStream() {
     final userStream = user.orderBy('name', descending: false).snapshots();
 
     return userStream;
+  }
+
+  Stream<DocumentSnapshot> getCurrentUser() {
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+    final currentUser = user.doc(uid).snapshots();
+    
+    return currentUser;
   }
 
   // UPDATE: update user given a doc id

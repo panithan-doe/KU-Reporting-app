@@ -1,13 +1,17 @@
+import 'dart:convert';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:ku_report_app/screens/user/edit_profile.dart';
+import 'package:ku_report_app/services/user_service.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final User? user = FirebaseAuth.instance.currentUser;
+    final UserService userService = UserService();
 
     return Scaffold(
       backgroundColor: const Color(0xFFF2F5F7),
@@ -23,28 +27,81 @@ class ProfileScreen extends StatelessWidget {
         ),
       ),
 
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(height: 14,),
-          ProfileHeader(),
-          ProfileDetails(user: user),
-          EditProfileButton(),
-          SizedBox(height: 14,),
-          SignOutButton(),
-        ],
+      body: StreamBuilder<DocumentSnapshot>(
+        stream: userService.getCurrentUser(),
+        builder: (context, snapshot) {
+          // 1. Handle error
+          if (snapshot.hasError) {
+            return Center(
+              child: Text('Something went wrong: ${snapshot.error}'),
+            );
+          }
+
+          // 2. Loading state
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          // 3. If no data
+          if (!snapshot.hasData || !snapshot.data!.exists) {
+            return const Center(child: Text('No user data found.'));
+          }
+
+          DocumentSnapshot document = snapshot.data!;
+          final data = document.data() as Map<String, dynamic>;
+
+          final String name = data['name'].toString().trim() == '' ? '-' : data['name'];
+          final String email = data['email'].toString().trim() == '' ? '-' : data['email'];
+          final String username = data['username'].toString().trim() == '' ? '-' : data['username'];
+          final String phoneNumber = data['phoneNumber'].toString().trim() == '' ? '-' : data['phoneNumber'];
+
+          final String? profileImageBase64 = data['profileImageBase64'];
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: 14),
+              ProfileHeader(profileImageBase64: profileImageBase64,),
+              ProfileDetails(
+                name: name,
+                email: email,
+                username: username,
+                phoneNumber: phoneNumber,
+              ),
+              EditProfileButton(),
+              SizedBox(height: 14),
+              SignOutButton(),
+            ],
+          );
+        },
       ),
     );
   }
 }
 
 class ProfileHeader extends StatelessWidget {
-  const ProfileHeader({super.key});
+  final String? profileImageBase64; // Pass in from your snapshot data
+
+  const ProfileHeader({
+    super.key,
+    this.profileImageBase64,
+  });
 
   @override
   Widget build(BuildContext context) {
+    // Decode base64 if it's not null
+    ImageProvider? avatarImage;
+    if (profileImageBase64 != null && profileImageBase64!.isNotEmpty) {
+      try {
+        final bytes = base64Decode(profileImageBase64!);
+        avatarImage = MemoryImage(bytes);
+      } catch (e) {
+        debugPrint('Error decoding base64 image: $e');
+      }
+    }
+
     return Container(
-      padding: EdgeInsets.all(16),
+      padding: EdgeInsets.all(12),
       color: Colors.white,
       child: Column(
         children: [
@@ -62,9 +119,12 @@ class ProfileHeader extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           CircleAvatar(
-            radius: 60,
+            radius: 48,
             backgroundColor: Colors.grey[350],
-            child: Icon(Icons.person, size: 60, color: Colors.white),
+            backgroundImage: avatarImage,
+            child: avatarImage == null 
+                ? Icon(Icons.person, size: 60, color: Colors.white)
+                : null,
           ),
         ],
       ),
@@ -72,10 +132,20 @@ class ProfileHeader extends StatelessWidget {
   }
 }
 
-class ProfileDetails extends StatelessWidget {
-  final User? user;
 
-  const ProfileDetails({super.key, this.user});
+class ProfileDetails extends StatelessWidget {
+  const ProfileDetails({
+    super.key,
+    required this.name,
+    required this.email,
+    required this.username,
+    required this.phoneNumber,
+  });
+
+  final String name;
+  final String email;
+  final String username;
+  final String phoneNumber;
 
   @override
   Widget build(BuildContext context) {
@@ -86,11 +156,13 @@ class ProfileDetails extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildInfoRow("Name", user?.displayName ?? "-"),
-          const SizedBox(height: 24),
-          _buildInfoRow("Email", user?.email ?? "-"),
-          const SizedBox(height: 24),
-          _buildInfoRow("Phone Number", user?.phoneNumber ?? "-"),
+          _buildInfoRow("Name", name),
+          const SizedBox(height: 20),
+          _buildInfoRow("Email", email),
+          const SizedBox(height: 20),
+          _buildInfoRow("Username", username),
+          const SizedBox(height: 20),
+          _buildInfoRow("Phone Number", phoneNumber),
         ],
       ),
     );
@@ -120,16 +192,19 @@ class EditProfileButton extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       child: InkWell(
         onTap: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => EditProfileScreen()));
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => EditProfileScreen()),
+          );
         },
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const Icon(Icons.edit, color: Colors.blue, size: 24),
+            const Icon(Icons.edit, color: Colors.blue, size: 20),
             const SizedBox(width: 8),
             Text(
               "Edit Profile",
-              style: TextStyle(color: Colors.blue, fontSize: 18),
+              style: TextStyle(color: Colors.blue, fontSize: 16),
             ),
           ],
         ),
@@ -174,11 +249,11 @@ class SignOutButton extends StatelessWidget {
               },
               child: Row(
                 children: [
-                  const Icon(Icons.logout, color: Colors.red, size: 24),
+                  const Icon(Icons.logout, color: Colors.red, size: 20),
                   const SizedBox(width: 8),
                   Text(
                     "Sign Out",
-                    style: TextStyle(color: Colors.red, fontSize: 18),
+                    style: TextStyle(color: Colors.red, fontSize: 16),
                   ),
                 ],
               ),
@@ -189,88 +264,3 @@ class SignOutButton extends StatelessWidget {
     );
   }
 }
-
-
-// import 'package:flutter/material.dart';
-// import 'package:cloud_firestore/cloud_firestore.dart';
-// import 'package:firebase_auth/firebase_auth.dart';
-
-// class ProfileScreen extends StatelessWidget {
-//   const ProfileScreen({super.key});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     final user = FirebaseAuth.instance.currentUser;
-//     if (user == null) {
-//       return const Scaffold(
-//         body: Center(child: Text('No user logged in')),
-//       );
-//     }
-
-//     final docRef = FirebaseFirestore.instance.collection('users').doc(user.uid);
-
-//     return Scaffold(
-//       backgroundColor: const Color(0xFFF2F5F7),
-//       appBar: AppBar(
-//         title: const Text("Profile", style: TextStyle(fontSize: 32)),
-//         backgroundColor: Colors.white,
-//       ),
-//       body: StreamBuilder<DocumentSnapshot>(
-//         stream: docRef.snapshots(),
-//         builder: (context, snapshot) {
-//           if (!snapshot.hasData) {
-//             return const Center(child: CircularProgressIndicator());
-//           }
-//           if (!snapshot.data!.exists) {
-//             return const Center(child: Text('No profile found'));
-//           }
-
-//           final data = snapshot.data!.data() as Map<String, dynamic>;
-//           final name = data['name'] ?? 'Unknown';
-//           final phone = data['phoneNumber'] ?? 'Unknown';
-//           final profileImageUrl = data['profileImageUrl'] ?? null;
-
-//           return SingleChildScrollView(
-//             child: Column(
-//               children: [
-//                 const SizedBox(height: 16),
-//                 Container(
-//                   color: Colors.white,
-//                   padding: const EdgeInsets.all(16),
-//                   child: Row(
-//                     children: [
-//                       // Profile Image
-//                       CircleAvatar(
-//                         radius: 60,
-//                         backgroundColor: Colors.grey[300],
-//                         backgroundImage: profileImageUrl != null
-//                             ? NetworkImage(profileImageUrl)
-//                             : null,
-//                         child: profileImageUrl == null
-//                             ? const Icon(Icons.person, size: 60, color: Colors.white)
-//                             : null,
-//                       ),
-//                       const SizedBox(width: 16),
-//                       // Name + Phone
-//                       Expanded(
-//                         child: Column(
-//                           crossAxisAlignment: CrossAxisAlignment.start,
-//                           children: [
-//                             Text(name, style: const TextStyle(fontSize: 24)),
-//                             const SizedBox(height: 8),
-//                             Text(phone, style: const TextStyle(color: Colors.grey)),
-//                           ],
-//                         ),
-//                       ),
-//                     ],
-//                   ),
-//                 ),
-//                 // ... More UI ...
-//               ],
-//             ),
-//           );
-//         },
-//       ),
-//     );
-//   }
-// }
