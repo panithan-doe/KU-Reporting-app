@@ -1,11 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:ku_report_app/screens/dashboard/dashboard.dart';
 import 'package:ku_report_app/screens/reports/all_reports.dart';
 import 'package:ku_report_app/screens/reports/my_reports.dart';
 import 'package:ku_report_app/screens/user/notification.dart';
 import 'package:ku_report_app/services/notification_service.dart';
 import 'package:ku_report_app/services/report_service.dart';
+import 'package:ku_report_app/widgets/listtile_report.dart';
 import 'package:ku_report_app/widgets/listtile_report_home.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -291,13 +293,28 @@ class ReportsSection extends StatelessWidget {
 
                       String docId = document.id;
 
-                      return ListTileReportHome(
+                      // 1. Safely read the images array
+                      final List<dynamic>? imagesList = data['images'] as List<dynamic>?;
+                      
+                      // 2. Grab the first item if present
+                      String firstBase64 = '';
+                      if (imagesList != null && imagesList.isNotEmpty) {
+                          firstBase64 = imagesList[0] as String;  // get first image in list
+                      }
+                      
+                      final Timestamp? postDateTimestamp = data['postDate'] as Timestamp?;
+                      final postDateString = postDateTimestamp != null
+                        ? DateFormat('dd-MM--yyy').format(postDateTimestamp.toDate())
+                        : '';
+
+
+                      return ListTileReport(
                         docId: docId,
-                        image: data['image'],
+                        images: firstBase64,
                         title: data['title'],
                         location: data['location'],
                         status: data['status'],
-                        postDate: data['postDate'],
+                        postDate: postDateString,
                         category: data['category'],
                       );
                     },

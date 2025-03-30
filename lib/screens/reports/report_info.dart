@@ -3,9 +3,12 @@
 // import 'package:flutter/material.dart';
 // import 'package:ku_report_app/widgets/go_back_appbar.dart';
 
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:ku_report_app/services/notification_service.dart';
 import 'package:ku_report_app/services/report_service.dart';
 import 'package:ku_report_app/widgets/go_back_appbar.dart';
@@ -66,9 +69,19 @@ class ReportInfo extends StatelessWidget {
                 return const Center(child: Text('No data found'));
               }
 
+              // images
+              final List<dynamic>? base64ImagesList = data['images'] as List<dynamic>?;
+              final List<String> base64Images = base64ImagesList != null
+                ? base64ImagesList.cast<String>()
+                : [];
+
               // Extract fields from the "reports" doc
               final title = data['title'] as String;
-              final postDate = data['postDate'] as String;
+              // final postDate = data['postDate'];
+              final Timestamp? postDateTimestamp = data['postDate'] as Timestamp?;
+              final postDateString = postDateTimestamp != null
+                ? DateFormat('dd-MM--yyy').format(postDateTimestamp.toDate())
+                : '';
               final category = data['category'] as String;
               final status = data['status'] as String;
               final location = data['location'] as String;
@@ -79,13 +92,13 @@ class ReportInfo extends StatelessWidget {
                 padding: const EdgeInsets.all(20.0),
                 child: Column(
                   children: [
-                    ImageDetails(),
+                    ImageDetails(base64Images: base64Images),
                     const SizedBox(height: 20),
 
                     HeaderDetails(
                       title: title,
                       status: status,
-                      postDate: postDate,
+                      postDate: postDateString,
                     ),
                     const SizedBox(height: 20),
 
@@ -118,42 +131,62 @@ class ReportInfo extends StatelessWidget {
 
 // IMAGE SECTION:
 class ImageDetails extends StatelessWidget {
-  ImageDetails({super.key});
+  ImageDetails({
+    super.key,
+    required this.base64Images,
+  });
+
+  final List<String> base64Images;
 
   final PageController _pageController = PageController(viewportFraction: 0.4);
 
   @override
   Widget build(BuildContext context) {
+    
+    if (base64Images.isEmpty) {
+      return const Center(
+        child: Text('No images'),
+      );
+    }
+    
     return SizedBox(
       // color: Colors.amber,
       height: 172,
-      child: PageView(
+      child: PageView.builder(
         controller: _pageController,
-        children: [
-          Container(
+        itemCount: base64Images.length,
+        itemBuilder: (context, index) {
+          final base64Str = base64Images[index];
+          return Container(
             margin: const EdgeInsets.symmetric(horizontal: 8),
-            child: Image.asset(
-              'assets/images/lecturehall3.png',
-              fit: BoxFit.cover,
-            ),
-          ),
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 8),
-            child: Image.asset(
-              'assets/images/lecturehall3.png',
-              fit: BoxFit.cover,
-            ),
-          ),
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 8),
-            child: Image.asset(
-              'assets/images/lecturehall3.png',
-              fit: BoxFit.cover,
-            ),
-          ),
-        ],
+            child: _buildImage(base64Str),
+          );
+        },
       ),
     );
+  }
+  /// Decode the base64 string and return an Image.memory widget
+  Widget _buildImage(String base64Str) {
+    try {
+      final bytes = base64Decode(base64Str);
+      return Image.memory(
+        bytes,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          // If there's an error decoding or rendering, show placeholder
+          return Container(
+            color: Colors.grey[300],
+            child: const Icon(Icons.broken_image, color: Colors.white),
+          );
+        },
+      );
+    } catch (e) {
+      // If decoding fails for any reason, fallback
+      return Container(
+        color: Colors.grey[300],
+        child: const Icon(Icons.broken_image, color: Colors.white),
+      );
+    }
   }
 }
 
