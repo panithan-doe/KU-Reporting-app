@@ -8,7 +8,6 @@ import 'package:ku_report_app/screens/user/notification.dart';
 import 'package:ku_report_app/services/notification_service.dart';
 import 'package:ku_report_app/services/report_service.dart';
 import 'package:ku_report_app/widgets/listtile_report.dart';
-import 'package:ku_report_app/widgets/listtile_report_home.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 
@@ -129,9 +128,23 @@ class GreetingSection extends StatelessWidget {
           );
         }
 
+        String getGreetingMessage() {
+        final hour = DateTime.now().hour;
+
+        if (hour >= 5 && hour < 12) {
+          return 'Good morning';
+        } else if (hour >= 12 && hour < 17) {
+          return 'Good afternoon';
+        } else if (hour >= 17 && hour < 20) {
+          return 'Good evening';
+        } else {
+          return 'Good night';
+        }
+      }
+
         if (snapshot.hasError || !snapshot.hasData) {
           return const Text(
-            'Welcome 👋',
+            'Error',
             style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           );
         }
@@ -144,8 +157,10 @@ class GreetingSection extends StatelessWidget {
             ? name
             : (username is String && username.isNotEmpty ? username : 'User');
 
+        final greeting = getGreetingMessage();
+
         return Text(
-          'Welcome, $displayName 👋',
+          '$greeting, $displayName 👋',
           style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         );
       },
