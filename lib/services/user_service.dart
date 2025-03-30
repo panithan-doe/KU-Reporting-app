@@ -1,8 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class UserService {
   // get collection of user
-  final CollectionReference user = FirebaseFirestore.instance.collection('user');
+  final CollectionReference user = FirebaseFirestore.instance.collection('users');
 
   // CREATE: add a new user
   Future<void> addUser(String name, String email, String phoneNumber, String role) {
@@ -11,9 +12,10 @@ class UserService {
       'email': email,
       'phoneNumber': phoneNumber,
       'role': role,
+      'profileImage': ''
     });
   }
-  
+
   // READ: get user from database
   Stream<QuerySnapshot> getUserStream() {
     final userStream = user.orderBy('name', descending: false).snapshots();
@@ -21,11 +23,19 @@ class UserService {
     return userStream;
   }
 
+  Stream<DocumentSnapshot> getCurrentUser() {
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+    final currentUser = user.doc(uid).snapshots();
+    
+    return currentUser;
+  }
+
   // UPDATE: update user given a doc id
-  Future<void> updateUser(String docID, String newName, String newEmail, String newPhoneNumber) {
-    return user.doc(docID).update({
+  Future<void> updateUser(String newName, String newPhoneNumber) {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    final docId = currentUser?.uid;
+    return user.doc(docId).update({
       'name': newName,
-      'email': newEmail,
       'phoneNumber': newPhoneNumber,
     });
   }
