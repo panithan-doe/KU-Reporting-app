@@ -1,8 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:ku_report_app/theme/color.dart';
+import 'package:ku_report_app/services/dashboard_service.dart';
 
-class DashboardScreen extends StatelessWidget {
-  const DashboardScreen({super.key});
+class DashboardScreen extends StatefulWidget {
+  DashboardScreen({super.key});
+
+  @override
+  _DashboardScreenState createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  final DashboardService _dashboardService = DashboardService();
+
+  // Keep track of the selected category. Default = 'ทั้งหมด'
+  String selectedCategory = 'ทั้งหมด';
 
   @override
   Widget build(BuildContext context) {
@@ -23,54 +35,104 @@ class DashboardScreen extends StatelessWidget {
       backgroundColor: const Color(0xFFF2F5F7),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
+        // Use a StreamBuilder to fetch counts for the selectedCategory
+        child: StreamBuilder<Map<String, int>>(
+          stream: _dashboardService.getStatusCounts(category: selectedCategory),
+          builder: (context, snapshot) {
+            if (snapshot.hasError) {
+              return Center(child: Text("Error: ${snapshot.error}"));
+            }
+            if (!snapshot.hasData) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            // Extract the counts
+            final counts = snapshot.data!;
+            final pendingCount = counts['Pending'] ?? 0;
+            final inProgressCount = counts['In Progress'] ?? 0;
+            final completedCount = counts['Completed'] ?? 0;
+            final canceledCount = counts['Canceled'] ?? 0;
+
+            final total = pendingCount + inProgressCount + completedCount + canceledCount;
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
-                  ],
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Pass a callback so FilterSection can notify us
+                        FilterSection(
+                          onCategorySelected: (newCategory) {
+                            setState(() {
+                              selectedCategory = newCategory;
+                            });
+                          },
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Summaries, pass dynamic counts
+                        SummarySection(
+                          pending: pendingCount,
+                          inProgress: inProgressCount,
+                          completed: completedCount,
+                          canceled: canceledCount,
+                          total: total,
+                        ),
+                        const SizedBox(height: 24),
+
+                        // Pie Chart
+                        Expanded(
+                          child: PieChartSection(
+                            pending: pendingCount,
+                            inProgress: inProgressCount,
+                            completed: completedCount,
+                            canceled: canceledCount,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const FilterSection(),
-                    const SizedBox(height: 16),
-                    const SummarySection(),
-                    const SizedBox(height: 24),
-                    Expanded(child: PieChartSection()),
-                  ],
-                ),
-              ),
-            ),
-          ],
+              ],
+            );
+          },
         ),
       ),
     );
   }
 }
 
+// A modified FilterSection that can call back with the selected category
 class FilterSection extends StatefulWidget {
-  const FilterSection({super.key});
+  final void Function(String) onCategorySelected;
+
+  const FilterSection({
+    super.key,
+    required this.onCategorySelected, // callback
+  });
 
   @override
   _FilterSectionState createState() => _FilterSectionState();
 }
 
 class _FilterSectionState extends State<FilterSection> {
-  // กำหนดค่า index ของ filter ที่ active อยู่
   int selectedIndex = 0;
 
-  // รายการ filter ทั้ง 9 อย่าง
   final List<String> filters = [
     'ทั้งหมด',
     'ไฟฟ้า',
@@ -90,29 +152,37 @@ class _FilterSectionState extends State<FilterSection> {
       child: Row(
         children: List.generate(
           filters.length,
-          (index) => _buildFilterButton(
-            filters[index],
-            isActive: index == selectedIndex,
-            onTap: () {
-              setState(() {
-                selectedIndex = index;
-                // ที่นี่คุณสามารถเพิ่มฟังก์ชันการ filter ข้อมูลตาม filter ที่เลือกได้
-              });
-            },
-          ),
+          (index) {
+            final filter = filters[index];
+            return _buildFilterButton(
+              filter,
+              isActive: index == selectedIndex,
+              onTap: () {
+                setState(() {
+                  selectedIndex = index;
+                });
+                // Invoke the callback, so the parent can update
+                widget.onCategorySelected(filter);
+              },
+            );
+          },
         ),
       ),
     );
   }
 
-  Widget _buildFilterButton(String title, {bool isActive = false, required VoidCallback onTap}) {
+  Widget _buildFilterButton(
+    String title, {
+    bool isActive = false,
+    required VoidCallback onTap,
+  }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 4),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
-          color: isActive ? const Color.fromARGB(255, 27, 179, 115) : Colors.grey.shade200,
+          color: isActive ? customGreenPrimary : Colors.grey.shade200,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Text(
@@ -128,7 +198,20 @@ class _FilterSectionState extends State<FilterSection> {
 }
 
 class SummarySection extends StatelessWidget {
-  const SummarySection({super.key});
+  const SummarySection({
+    super.key,
+    required this.pending,
+    required this.inProgress,
+    required this.completed,
+    required this.canceled,
+    required this.total,
+  });
+
+  final int pending;
+  final int inProgress;
+  final int completed;
+  final int canceled;
+  final int total;
 
   @override
   Widget build(BuildContext context) {
@@ -136,14 +219,15 @@ class SummarySection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 20),
-        const Text(
-          'จำนวนปัญหาทั้งหมด    74 รายการ',
-          style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
+        Text(
+          'จำนวนปัญหาทั้งหมด    $total รายการ',
+          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 30),
-        _buildStatusRow('รอรับการแก้ไข', 15, Colors.red[400]!),
-        _buildStatusRow('กำลังดำเนินการ', 24, Colors.orange[500]!),
-        _buildStatusRow('เสร็จสิ้น', 35, Colors.green),
+        _buildStatusRow('รอรับการแก้ไข', pending, Colors.blue[400]!),
+        _buildStatusRow('กำลังดำเนินการ', inProgress, Colors.orange[400]!),
+        _buildStatusRow('เสร็จสิ้น', completed, Colors.green[400]!),
+        _buildStatusRow('ยกเลิก', canceled, Colors.red[400]!),
       ],
     );
   }
@@ -176,37 +260,62 @@ class SummarySection extends StatelessWidget {
 }
 
 class PieChartSection extends StatelessWidget {
-  const PieChartSection({super.key});
+  const PieChartSection({
+    super.key,
+    required this.pending,
+    required this.inProgress,
+    required this.completed,
+    required this.canceled,
+  });
+
+  final int pending;
+  final int inProgress;
+  final int completed;
+  final int canceled;
 
   @override
   Widget build(BuildContext context) {
     return PieChart(
       PieChartData(
         sections: [
+          // Pending
           PieChartSectionData(
-            value: 15,
-            color: Colors.red[400]!,
-            title: '15',
+            value: pending.toDouble(),
+            color: Colors.blue[400]!,
+            title: '$pending',
             titleStyle: const TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 16,
               color: Colors.white,
             ),
           ),
+          // In progress
           PieChartSectionData(
-            value: 24,
+            value: inProgress.toDouble(),
             color: Colors.orange[400]!,
-            title: '24',
+            title: '$inProgress',
             titleStyle: const TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 16,
               color: Colors.white,
             ),
           ),
+          // Completed
           PieChartSectionData(
-            value: 35,
-            color: Colors.green,
-            title: '35',
+            value: completed.toDouble(),
+            color: Colors.green[400]!,
+            title: '$completed',
+            titleStyle: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              color: Colors.white,
+            ),
+          ),
+          // Canceled
+          PieChartSectionData(
+            value: canceled.toDouble(),
+            color: Colors.red[400]!,
+            title: '$canceled',
             titleStyle: const TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 16,
