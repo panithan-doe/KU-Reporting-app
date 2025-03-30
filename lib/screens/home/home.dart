@@ -7,6 +7,8 @@ import 'package:ku_report_app/screens/user/notification.dart';
 import 'package:ku_report_app/services/notification_service.dart';
 import 'package:ku_report_app/services/report_service.dart';
 import 'package:ku_report_app/widgets/listtile_report_home.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -106,16 +108,52 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
 }
 
 class GreetingSection extends StatelessWidget {
-  const GreetingSection({super.key});
+  GreetingSection({super.key});
+
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   @override
   Widget build(BuildContext context) {
-    return const Text(
-      'Welcome, username 👋',
-      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+    return FutureBuilder<DocumentSnapshot>(
+      future: FirebaseFirestore.instance
+          .collection('users')
+          .doc(_auth.currentUser!.uid)
+          .get(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Text(
+            'Loading...',
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          );
+        }
+
+        if (snapshot.hasError || !snapshot.hasData) {
+          return const Text(
+            'Welcome 👋',
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          );
+        }
+
+        final data = snapshot.data!.data() as Map<String, dynamic>;
+        final name = data['name'];
+        final username = data['username'];
+        // ถ้ามี name ที่เป็น String และไม่ว่างให้ใช้ name ถ้าไม่ก็ใช้ username (หรือ 'User' ถ้า username ไม่ใช่ String)
+        final displayName = (name is String && name.isNotEmpty)
+            ? name
+            : (username is String && username.isNotEmpty ? username : 'User');
+
+        return Text(
+          'Welcome, $displayName 👋',
+          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        );
+      },
     );
   }
 }
+
+
+
+
 
 class DashboardSection extends StatelessWidget {
   const DashboardSection({super.key});
@@ -125,32 +163,45 @@ class DashboardSection extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        DashboardCard(
-          icon: Icons.dashboard,
-          title: 'Dashboard',
-          color: Colors.green.shade100,
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const DashboardScreen()),
-            );
-          },
+        Expanded(
+          child: GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => AllReportsScreen()),
+              );
+            },
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 4),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.asset('assets/images/reports.png', fit: BoxFit.cover),
+              ),
+            ),
+          ),
         ),
-        DashboardCard(
-          icon: Icons.insert_drive_file,
-          title: 'Reports',
-          color: Colors.blue.shade100,
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => AllReportsScreen()),
-            );
-          },
+        Expanded(
+          child: GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const DashboardScreen()),
+              );
+            },
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 4),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.asset('assets/images/dashboard.png', fit: BoxFit.cover),
+              ),
+            ),
+          ),
         ),
       ],
     );
   }
 }
+
 
 class DashboardCard extends StatelessWidget {
   final IconData icon;

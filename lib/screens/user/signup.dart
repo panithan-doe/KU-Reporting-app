@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:ku_report_app/screens/user/enter_username.dart';
 import 'package:ku_report_app/theme/color.dart';

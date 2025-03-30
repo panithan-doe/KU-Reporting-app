@@ -7,18 +7,25 @@ class DashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(80),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: AppBar(
+            backgroundColor: const Color(0xFFF2F5F7),
+            title: const Text(
+              "Dashboard",
+              style: TextStyle(fontSize: 32, fontWeight: FontWeight.w500),
+            ),
+          ),
+        ),
+      ),
       backgroundColor: const Color(0xFFF2F5F7),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 60),
-            const Text(
-              'Dashboard',
-              style: TextStyle(fontSize: 32, fontWeight: FontWeight.w500),
-            ),
-            const SizedBox(height: 24),
             Expanded(
               child: Container(
                 padding: const EdgeInsets.all(16),
