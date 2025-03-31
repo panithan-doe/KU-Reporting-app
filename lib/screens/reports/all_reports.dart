@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:ku_report_app/screens/reports/my_reports.dart';
 import 'package:ku_report_app/theme/color.dart';
 import 'package:ku_report_app/widgets/filter_bar.dart';
@@ -66,6 +67,22 @@ class _AllReportsScreenState extends State<AllReportsScreen> {
       body: StreamBuilder<QuerySnapshot>(
         stream: _getSortedReportStream(),
         builder: (context, snapshot) {
+
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset('assets/images/empty-box.png', width: 120,),
+                  SizedBox(height: 8,),
+                  Text('No reports yet', style: TextStyle(fontSize: 24),),
+                  SizedBox(height: 4,),
+                  Text('Send your report and it show here.')
+                ],
+              )
+            );
+          }
+
           if (snapshot.hasData) {
             final reportList = snapshot.data!.docs;
 
@@ -101,14 +118,27 @@ class _AllReportsScreenState extends State<AllReportsScreen> {
                           document.data() as Map<String, dynamic>;
 
                       String docId = document.id;
+                      // 1. Safely read the images array
+                      final List<dynamic>? imagesList = data['images'] as List<dynamic>?;
+                      
+                      // 2. Grab the first item if present
+                      String firstBase64 = '';
+                      if (imagesList != null && imagesList.isNotEmpty) {
+                          firstBase64 = imagesList[0] as String;  // get first image in list
+                      }
+                      
+                      final Timestamp? postDateTimestamp = data['postDate'] as Timestamp?;
+                      final postDateString = postDateTimestamp != null
+                        ? DateFormat('dd-MM--yyy').format(postDateTimestamp.toDate())
+                        : '';
 
                       return ListTileReport(
                         docId: docId,
-                        image: data['image'],
+                        images: firstBase64,
                         title: data['title'],
                         location: data['location'],
                         status: data['status'],
-                        postDate: data['postDate'],
+                        postDate: postDateString,
                         category: data['category'],
                       );
                     },

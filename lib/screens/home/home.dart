@@ -1,12 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:ku_report_app/screens/dashboard/dashboard.dart';
 import 'package:ku_report_app/screens/reports/all_reports.dart';
 import 'package:ku_report_app/screens/reports/my_reports.dart';
 import 'package:ku_report_app/screens/user/notification.dart';
 import 'package:ku_report_app/services/notification_service.dart';
 import 'package:ku_report_app/services/report_service.dart';
-import 'package:ku_report_app/widgets/listtile_report_home.dart';
+import 'package:ku_report_app/widgets/listtile_report.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 
@@ -127,9 +128,23 @@ class GreetingSection extends StatelessWidget {
           );
         }
 
+        String getGreetingMessage() {
+        final hour = DateTime.now().hour;
+
+        if (hour >= 5 && hour < 12) {
+          return 'Good morning';
+        } else if (hour >= 12 && hour < 17) {
+          return 'Good afternoon';
+        } else if (hour >= 17 && hour < 20) {
+          return 'Good evening';
+        } else {
+          return 'Good night';
+        }
+      }
+
         if (snapshot.hasError || !snapshot.hasData) {
           return const Text(
-            'Welcome 👋',
+            'Error',
             style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           );
         }
@@ -142,8 +157,10 @@ class GreetingSection extends StatelessWidget {
             ? name
             : (username is String && username.isNotEmpty ? username : 'User');
 
+        final greeting = getGreetingMessage();
+
         return Text(
-          'Welcome, $displayName 👋',
+          '$greeting, $displayName 👋',
           style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         );
       },
@@ -180,12 +197,13 @@ class DashboardSection extends StatelessWidget {
             ),
           ),
         ),
+        SizedBox(width: 8,),
         Expanded(
           child: GestureDetector(
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const DashboardScreen()),
+                MaterialPageRoute(builder: (context) => DashboardScreen()),
               );
             },
             child: Container(
@@ -279,33 +297,60 @@ class ReportsSection extends StatelessWidget {
           child: StreamBuilder<QuerySnapshot>(
             stream: reportService.getReportOfCurrentUserId(),
             builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                final reportList = snapshot.data!.docs;
-                
-                return ListView.builder(
-                    itemCount: reportList.length,
-                    itemBuilder: (context, index) {
-                      DocumentSnapshot document = reportList[index];
-                      Map<String, dynamic> data =
-                          document.data() as Map<String, dynamic>;
 
-                      String docId = document.id;
-
-                      return ListTileReportHome(
-                        docId: docId,
-                        image: data['image'],
-                        title: data['title'],
-                        location: data['location'],
-                        status: data['status'],
-                        postDate: data['postDate'],
-                        category: data['category'],
-                      );
-                    },
+              if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Image.asset('assets/images/empty-box.png', width: 120,),
+                      SizedBox(height: 8,),
+                      Text('No reports yet', style: TextStyle(fontSize: 24),),
+                      SizedBox(height: 4,),
+                      Text('Send your report and it show here.')
+                    ],
+                  )
                 );
-              } else {
-                return const Center(child: Text('No notifications yet'),);
               }
 
+              
+              final reportList = snapshot.data!.docs;
+              
+              return ListView.builder(
+                  itemCount: reportList.length,
+                  itemBuilder: (context, index) {
+                    DocumentSnapshot document = reportList[index];
+                    Map<String, dynamic> data =
+                        document.data() as Map<String, dynamic>;
+
+                    String docId = document.id;
+
+                    // 1. Safely read the images array
+                    final List<dynamic>? imagesList = data['images'] as List<dynamic>?;
+                    
+                    // 2. Grab the first item if present
+                    String firstBase64 = '';
+                    if (imagesList != null && imagesList.isNotEmpty) {
+                        firstBase64 = imagesList[0] as String;  // get first image in list
+                    }
+                    
+                    final Timestamp? postDateTimestamp = data['postDate'] as Timestamp?;
+                    final postDateString = postDateTimestamp != null
+                      ? DateFormat('dd-MM--yyy').format(postDateTimestamp.toDate())
+                      : '';
+
+
+                    return ListTileReport(
+                      docId: docId,
+                      images: firstBase64,
+                      title: data['title'],
+                      location: data['location'],
+                      status: data['status'],
+                      postDate: postDateString,
+                      category: data['category'],
+                    );
+                  },
+              );
             },
           ),
         ),

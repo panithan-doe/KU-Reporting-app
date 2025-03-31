@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:ku_report_app/screens/reports/report_info.dart';
 
@@ -5,7 +6,7 @@ class ListTileReport extends StatelessWidget {
   const ListTileReport({
     super.key,
     required this.docId,
-    required this.image,
+    required this.images,
     required this.title,
     required this.location,
     required this.status,
@@ -14,7 +15,7 @@ class ListTileReport extends StatelessWidget {
   });
 
   final String docId;
-  final String image;
+  final String images;
   final String title;
   final String location;
   final String status;
@@ -52,7 +53,7 @@ class ListTileReport extends StatelessWidget {
                     child: SizedBox(
                       height: 60,
                       width: 60,
-                      child: Image.asset(image, fit: BoxFit.cover),
+                      child: _buildLeadingImage(images),
                     ),
                   ),
 
@@ -117,5 +118,34 @@ class ListTileReport extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  // Helper to decode base64 or show a placeholder
+  Widget _buildLeadingImage(String base64Str) {
+    if (base64Str.isEmpty) {
+      return Container(
+        color: Colors.grey[300],
+        child: const Icon(Icons.photo, color: Colors.white),
+      );
+    }
+
+    try {
+      final bytes = base64Decode(base64Str);
+      return Image.memory(
+        bytes,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            color: Colors.grey[300],
+            child: const Icon(Icons.broken_image, color: Colors.white),
+          );
+        },
+      );
+    } catch (e) {
+      return Container(
+        color: Colors.grey[300],
+        child: const Icon(Icons.broken_image, color: Colors.white),
+      );
+    }
   }
 }

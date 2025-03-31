@@ -5,6 +5,7 @@ import 'package:ku_report_app/theme/color.dart';
 import 'package:ku_report_app/widgets/filter_bar.dart';
 import 'package:ku_report_app/widgets/go_back_appbar.dart';
 import 'package:ku_report_app/widgets/listtile_report.dart';
+import 'package:intl/intl.dart';
 
 class MyReportsPage extends StatefulWidget {
   const MyReportsPage({super.key});
@@ -29,6 +30,22 @@ class _MyReportsPageState extends State<MyReportsPage> {
           // Use a helper method to get the correct stream based on _sortOption
           stream: _getSortedReportStream(),
           builder: (context, snapshot) {
+
+            if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Image.asset('assets/images/empty-box.png', width: 120,),
+                    SizedBox(height: 8,),
+                    Text('No reports yet', style: TextStyle(fontSize: 24),),
+                    SizedBox(height: 4,),
+                    Text('Send your report and it show here.'),
+                  ],
+                )
+              );
+            }
+
             if (snapshot.hasData) {
               final reportList = snapshot.data!.docs;
 
@@ -50,13 +67,26 @@ class _MyReportsPageState extends State<MyReportsPage> {
 
                         String docId = document.id;
 
+                        // images array logic
+                        final List<dynamic>? imagesList = data['images'] as List<dynamic>?;
+                        
+                        String firstBase64 = '';
+                        if (imagesList != null && imagesList.isNotEmpty) {
+                          firstBase64 = imagesList[0] as String;
+                        }
+
+                        final Timestamp? postDateTimestamp = data['postDate'] as Timestamp?;
+                        final postDateString = postDateTimestamp != null
+                          ? DateFormat('dd-MM--yyy').format(postDateTimestamp.toDate())
+                          : '';
+
                         return ListTileReport(
                           docId: docId,
-                          image: data['image'],
+                          images: firstBase64,
                           title: data['title'],
                           location: data['location'],
                           status: data['status'],
-                          postDate: data['postDate'],
+                          postDate: postDateString,
                           category: data['category'],
                         );
                       },

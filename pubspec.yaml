@@ -80,6 +80,8 @@ flutter:
     - assets/images/lecturehall3.png
     - assets/images/dashboard.png
     - assets/images/reports.png
+    - assets/images/cat-bored.png
+    - assets/images/empty-box.png
 
     # icons
     - assets/icons/KU_sublogo.png
