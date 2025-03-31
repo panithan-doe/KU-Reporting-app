@@ -116,9 +116,7 @@ class _SignUpPageState extends State<SignUpPage> {
             left: 0,
             right: 0,
             bottom: 0, // This makes the container extend to the bottom of the screen
-            child: Padding(
-              padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-              child: Container(
+            child: Container(
               padding: const EdgeInsets.all(24),
               decoration: const BoxDecoration(
                 color: Colors.white,
@@ -128,9 +126,6 @@ class _SignUpPageState extends State<SignUpPage> {
                 ),
               ),
               child: SingleChildScrollView(
-                  padding: EdgeInsets.only(
-                  bottom: MediaQuery.of(context).viewInsets.bottom,
-                ),
                 child: Form(
                   key: _formKey,
                   child: Column(
@@ -318,7 +313,6 @@ class _SignUpPageState extends State<SignUpPage> {
                 ),
               ),
             ),
-            ) 
           ),
           Padding(
             padding: EdgeInsets.all(14),
@@ -334,7 +328,7 @@ class _SignUpPageState extends State<SignUpPage> {
                         context,
                         '/sign-in'
                       );
-                    },
+                    }, 
                     icon: Icon(Icons.arrow_back, color: Colors.white, size: 28,)
                   ),
                 ],
