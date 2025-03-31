@@ -20,59 +20,6 @@ class _SignUpPageState extends State<SignUpPage> {
   bool _isConfirmPasswordVisible = false;
   String? _errorMessage;
 
-  // Create a new account using Firebase Auth
-  // Future<void> _createAccount() async {
-  //   if (!_formKey.currentState!.validate()) return;
-
-  //   // Ensure passwords match
-  //   if (_passwordController.text != _confirmPasswordController.text) {
-  //     setState(() {
-  //       _errorMessage = 'Passwords do not match.';
-  //     });
-  //     return;
-  //   }
-
-  //   setState(() {
-  //     _isLoading = true;
-  //     _errorMessage = null;
-  //   });
-
-  //   try {
-  //     UserCredential userCred = await FirebaseAuth.instance.createUserWithEmailAndPassword(
-  //       email: _emailController.text.trim(),
-  //       password: _passwordController.text,
-  //     );
-
-  //     final uid = userCred.user!.uid;
-
-  //     await FirebaseFirestore.instance.collection('users').doc(uid).set({
-  //       'email': _emailController.text.trim(),
-  //       'role': 'User', // or "Technician" or "Admin" depending on your logic
-  //       'name': '',
-  //       'phoneNumber': '',
-  //       // you can store other fields here too, like displayName, phone, etc.
-  //     });
-
-  //     if (mounted) {
-  //       Navigator.pushReplacementNamed(context, '/home');
-  //     }
-  //   } on FirebaseAuthException catch (e) {
-  //     setState(() {
-  //       _errorMessage = _getFirebaseErrorMessage(e.code);
-  //     });
-  //   } catch (e) {
-  //     setState(() {
-  //       _errorMessage = 'An unexpected error occurred';
-  //     });
-  //   } finally {
-  //     if (mounted) {
-  //       setState(() {
-  //         _isLoading = false;
-  //       });
-  //     }
-  //   }
-  // }
-
   void _navigateToUsernamePage() {
     if (!_formKey.currentState!.validate()) return;
 
@@ -103,20 +50,20 @@ class _SignUpPageState extends State<SignUpPage> {
 
 
   // Map Firebase error codes to user-friendly messages
-  String _getFirebaseErrorMessage(String code) {
-    switch (code) {
-      case 'invalid-email':
-        return 'The email address is not valid.';
-      case 'email-already-in-use':
-        return 'This email is already in use by another account.';
-      case 'weak-password':
-        return 'The password is too weak.';
-      case 'operation-not-allowed':
-        return 'Email/password accounts are not enabled.';
-      default:
-        return 'An error occurred. Please try again.';
-    }
-  }
+  // String _getFirebaseErrorMessage(String code) {
+  //   switch (code) {
+  //     case 'invalid-email':
+  //       return 'The email address is not valid.';
+  //     case 'email-already-in-use':
+  //       return 'This email is already in use by another account.';
+  //     case 'weak-password':
+  //       return 'The password is too weak.';
+  //     case 'operation-not-allowed':
+  //       return 'Email/password accounts are not enabled.';
+  //     default:
+  //       return 'An error occurred. Please try again.';
+  //   }
+  // }
 
   @override
   void dispose() {
@@ -169,7 +116,9 @@ class _SignUpPageState extends State<SignUpPage> {
             left: 0,
             right: 0,
             bottom: 0, // This makes the container extend to the bottom of the screen
-            child: Container(
+            child: Padding(
+              padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+              child: Container(
               padding: const EdgeInsets.all(24),
               decoration: const BoxDecoration(
                 color: Colors.white,
@@ -179,6 +128,9 @@ class _SignUpPageState extends State<SignUpPage> {
                 ),
               ),
               child: SingleChildScrollView(
+                  padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).viewInsets.bottom,
+                ),
                 child: Form(
                   key: _formKey,
                   child: Column(
@@ -366,6 +318,7 @@ class _SignUpPageState extends State<SignUpPage> {
                 ),
               ),
             ),
+            ) 
           ),
           Padding(
             padding: EdgeInsets.all(14),
@@ -381,7 +334,7 @@ class _SignUpPageState extends State<SignUpPage> {
                         context,
                         '/sign-in'
                       );
-                    }, 
+                    },
                     icon: Icon(Icons.arrow_back, color: Colors.white, size: 28,)
                   ),
                 ],

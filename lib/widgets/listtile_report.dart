@@ -123,7 +123,6 @@ class ListTileReport extends StatelessWidget {
   // Helper to decode base64 or show a placeholder
   Widget _buildLeadingImage(String base64Str) {
     if (base64Str.isEmpty) {
-      // No image => show placeholder
       return Container(
         color: Colors.grey[300],
         child: const Icon(Icons.photo, color: Colors.white),
@@ -143,27 +142,10 @@ class ListTileReport extends StatelessWidget {
         },
       );
     } catch (e) {
-      // If decoding fails => fallback
       return Container(
         color: Colors.grey[300],
         child: const Icon(Icons.broken_image, color: Colors.white),
       );
-    }
-  }
-
-    // Optionally, a small helper function to color the status
-  Color _getStatusColor(String status) {
-    switch (status) {
-      case "In progress":
-        return Colors.orange;
-      case "Pending":
-        return Colors.blue;
-      case "Canceled":
-        return Colors.red;
-      case "Completed":
-        return Colors.green;
-      default:
-        return Colors.grey;
     }
   }
 }

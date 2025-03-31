@@ -115,14 +115,10 @@ class UserHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     ImageProvider? avatarImage;
-    if (profileImageBase64 != null && profileImageBase64!.isNotEmpty) {
-      try {
-        final bytes = base64Decode(profileImageBase64!);
-        avatarImage = MemoryImage(bytes);
-      } catch (e) {
-        debugPrint('Error decoding base64 image: $e');
-      }
-    }
+    
+    final bytes = base64Decode(profileImageBase64);
+    avatarImage = MemoryImage(bytes);
+      
     return Center(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
