@@ -447,7 +447,7 @@ class _SignInPageState extends State<SignInPage> {
                         ),
                       ],
                     ),
-                    Container(height: 20, color: Colors.white),
+                    Container(height: 40, color: Colors.white),
                   ],
                 ),
               ),
